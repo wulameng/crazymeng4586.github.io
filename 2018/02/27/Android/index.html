@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本文主要通过学习姜维大神的Android中的Apk的加固(加壳)原理解析和实现和雪一梦大神的根据”so劫持”过360加固详细分析 来记录自己的学习过程。  为什么要对APK加固 目前的软件发展速度非常快，尤其是移动端软件越来越深入人们的生活之中，我们时时刻刻都需要这些软件来进行支付，查询以及浏览信息。我们的隐私信息以及经济安全可谓是都在app之中。所以这也加快了Apk加固技术的发展，加固后的apk">
+<meta name="keywords" content="Android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="apk加固原理">
+<meta property="og:url" content="http://yoursite.com/2018/02/27/Android/index.html">
+<meta property="og:site_name" content="Wula Meng">
+<meta property="og:description" content="本文主要通过学习姜维大神的Android中的Apk的加固(加壳)原理解析和实现和雪一梦大神的根据”so劫持”过360加固详细分析 来记录自己的学习过程。  为什么要对APK加固 目前的软件发展速度非常快，尤其是移动端软件越来越深入人们的生活之中，我们时时刻刻都需要这些软件来进行支付，查询以及浏览信息。我们的隐私信息以及经济安全可谓是都在app之中。所以这也加快了Apk加固技术的发展，加固后的apk">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/images/protectapk.png">
+<meta property="og:image" content="http://yoursite.com/images/jiagua.png">
+<meta property="og:image" content="http://yoursite.com/images/jadx.png">
+<meta property="og:image" content="http://yoursite.com/images/Android%20dex文件格式结构图.png">
+<meta property="og:updated_time" content="2018-06-23T16:05:38.588Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="apk加固原理">
+<meta name="twitter:description" content="本文主要通过学习姜维大神的Android中的Apk的加固(加壳)原理解析和实现和雪一梦大神的根据”so劫持”过360加固详细分析 来记录自己的学习过程。  为什么要对APK加固 目前的软件发展速度非常快，尤其是移动端软件越来越深入人们的生活之中，我们时时刻刻都需要这些软件来进行支付，查询以及浏览信息。我们的隐私信息以及经济安全可谓是都在app之中。所以这也加快了Apk加固技术的发展，加固后的apk">
+<meta name="twitter:image" content="http://yoursite.com/images/protectapk.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.3',
+    sidebar: {"position":"right","display":"hide","offset":30,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"shrinkIn","post_header":"perspectiveRightIn","post_body":"slideUpIn","coll_header":"flipXIn","sidebar":"slideRightIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/02/27/Android/"/>
+
+
+
+
+
+  <title>apk加固原理 | Wula Meng</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?1e7e8c591300bc759ce43c45d8503fac";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Wula Meng</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">晨起动征铎</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/02/27/Android/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="wula meng">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wula Meng">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">apk加固原理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-27T18:04:48+08:00">
+                2018-02-27
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于&#58;</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2018-06-24T00:05:38+08:00">
+                2018-06-23
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index">
+                    <span itemprop="name">Android</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                   字
+                </span>
+              
+
+              
+
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文主要通过学习姜维大神的<a href="http://www.520monkey.com/archives/553" target="_blank" rel="noopener">Android中的Apk的加固(加壳)原理解析和实现</a>和雪一梦大神的<a href="https://bbs.pediy.com/thread-223796.htm" target="_blank" rel="noopener">根据”so劫持”过360加固详细分析</a> 来记录自己的学习过程。</p>
+<blockquote>
+<h3 id="为什么要对APK加固"><a href="#为什么要对APK加固" class="headerlink" title="为什么要对APK加固"></a>为什么要对APK加固</h3></blockquote>
+<p>目前的软件发展速度非常快，尤其是移动端软件越来越深入人们的生活之中，我们时时刻刻都需要这些软件来进行支付，查询以及浏览信息。我们的隐私信息以及经济安全可谓是都在app之中。所以这也加快了Apk加固技术的发展，加固后的apk虽然增大了不法分子的破解难度，但是也明显降低了app的运行效率，所以有一些加固是针对于apk的主要逻辑代码进行的。加固也分为dex加固和so加固，但是呢，dex加固的重要性应该是更加高一点的，因为反编译后的java代码的可读性更高。</p>
+<blockquote>
+<h3 id="加固原理"><a href="#加固原理" class="headerlink" title="加固原理"></a>加固原理</h3></blockquote>
+<p>图片盗用姜维大神</p>
+<p><img src="/images/protectapk.png" alt=""></p>
+<p>从上图我们可以明白，apk加固主要步骤为：</p>
+<p>将一个需要加固的apk文件，一个负责解密的壳程序，先将apk文件进行加密，然后将解密的壳程序与之合并，得到新的dex文件，再将壳的dex文件替换，并得到一个全新的apk文件。将某个被加固的apk解压，如下图：</p>
+<p><img src="/images/jiagua.png" alt="assets文件夹"></p>
+<p>经过加密后的文件的assets文件夹中多出了两个libjiagu.so和libjiagu_x86.so文件，这就是apk被加固的标志。</p>
+<p><img src="/images/jadx.png" alt="dex文件"></p>
+<p>我们用jadx打开加压后的dex文件，看到和加固的原理一样，dex文件被替换。以上就是加固的原理。</p>
+<blockquote>
+<h3 id="Dex文件解析"><a href="#Dex文件解析" class="headerlink" title="Dex文件解析"></a>Dex文件解析</h3></blockquote>
+<p>这里我需要盗用一张非虫大神的图：</p>
+<p><img src="/images/Android dex文件格式结构图.png" alt="Android dex文件格式结构图"></p>
+<p>Dex是Android平台上(Dalvik虚拟机)的可执行文件。其实所有的加固，加密措施都是针对DexHeader中的checksum，signature和filesize来进行的，因为加固需要对dex文件进行改动，所以dex文件校验的数据也必须进行改动，知道了这个点之后，也就明白了，我们只要掌握dexheader其他的也就万变不离其宗了。</p>
+<p>首先根据图中所标注的，前8个字节是整个dex文件的magic（魔法数），其中低地址的4个字节的数据是dex文件</p>
+<p>的标识符，所有的dex文件的标志符都是一样的。高地址的4个字节数据是dex文件的版本，图中的dex文件版本是035。<code>0x08h-0x0Bh</code>这段地址上存放的是checksum，使用adler32加密算法，用来检验dex文件除magic和checksum以外的所有文件区域，检查错误。<code>0x0Ch-0x1Fh</code>这段地址上存放的是signature，使用SHA-1 hash算法，识别dex文件的唯一性。使用双重校验保证文件的安全性以及效率。<code>0x20h-0x23h</code>这段地址上存放的是这个dex文件的大小，<code>0x24h-0x27h</code>这段地址存放的是dexheader的大小，我发现好像所有的dexheader的大小都一样都是0x70，<code>0x28h-0x2Bh</code>这段地址上标志的是dex文件的字节序，像图中的0x78563412就是默认为小尾模式，跟C/C++中的小端模式一样<strong>即高地址存放低字节，低地址存放高字节</strong>，<code>0x2ch-0x2fh</code>中说明的是连接段的大小，默认为0表示静态连接。</p>
+<blockquote>
+<h3 id="Apk加固具体步骤"><a href="#Apk加固具体步骤" class="headerlink" title="Apk加固具体步骤"></a>Apk加固具体步骤</h3></blockquote>
+<p>首先我们需要一个需要加密的APK程序，在此我们就简单的写一个：</p>
+<p>主Application：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">App</span> <span class="keyword">extends</span> <span class="title">Application</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate();</span><br><span class="line">        Log.i(<span class="string">"mmm"</span>,<span class="string">"被加密APK载入"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个Application很简单就是打印一下Log。</p>
+<p>接下来是主Activity：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> TextView textView;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</span><br><span class="line">        setContentView(R.layout.activity_main);</span><br><span class="line">        textView=findViewById(R.id.text);</span><br><span class="line">        textView.setText(<span class="string">"被加密的App主页面"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>也是非常的简单，就是一个textview的展示。</p>
+<p>按照上面的流程我们需要对源APK进行加密，那么我们就需要一个加密的程序：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//加密的程序</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyMain</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">		<span class="comment">// TODO Auto-generated method stub</span></span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//读取源Apk</span></span><br><span class="line">			File payloadSrcFile=<span class="keyword">new</span> File(<span class="string">"force/ForceApkObj.apk"</span>);</span><br><span class="line">			<span class="comment">//读取脱壳程序的dex</span></span><br><span class="line">			File unShellDexFile=<span class="keyword">new</span> File(<span class="string">"force/ForceApk.dex"</span>);</span><br><span class="line">            <span class="comment">//将这个文件先转换为Byte，然后进行加密</span></span><br><span class="line">			<span class="keyword">byte</span>[] payloadArray=encrpt(readFileBytes(payloadSrcFile));</span><br><span class="line">            <span class="comment">//脱壳程序的dex也是一样</span></span><br><span class="line">			<span class="keyword">byte</span>[] unShellDexArray=readFileBytes(unShellDexFile);</span><br><span class="line">            <span class="comment">//分别得到这两个文件的大小，并计算出他们的总大小，最后加上的那4个字节存放的是目标APK的大小</span></span><br><span class="line">			<span class="keyword">int</span> payloadLen=payloadArray.length;</span><br><span class="line">			<span class="keyword">int</span> unShellDexLen=unShellDexArray.length;</span><br><span class="line">			<span class="keyword">int</span> totalLen=payloadLen+unShellDexLen+<span class="number">4</span>;</span><br><span class="line">			<span class="comment">//申请我们所需要的byte数组，大小就是上面的总量</span></span><br><span class="line">			<span class="keyword">byte</span>[] newdex=<span class="keyword">new</span> <span class="keyword">byte</span>[totalLen];</span><br><span class="line">			<span class="comment">//先将脱壳的dex写进我们所申请的数组当中，其次是被加密的APK，最后是目标Apk的大小</span></span><br><span class="line">			System.arraycopy(unShellDexArray, <span class="number">0</span>, newdex, <span class="number">0</span>, unShellDexLen);</span><br><span class="line">			</span><br><span class="line">			System.arraycopy(payloadArray, <span class="number">0</span>, newdex, unShellDexLen, payloadLen);</span><br><span class="line">			</span><br><span class="line">			System.arraycopy(intToByte(payloadLen),<span class="number">0</span>, newdex, totalLen-<span class="number">4</span>, <span class="number">4</span>);</span><br><span class="line">			<span class="comment">//分别修改dex文件大小，checksum和签名</span></span><br><span class="line">			fixFileSizeHeader(newdex);</span><br><span class="line">			</span><br><span class="line">			fixSHA1Header(newdex);</span><br><span class="line">			</span><br><span class="line">			fixCheckSumHeader(newdex);</span><br><span class="line">			</span><br><span class="line">			<span class="comment">//新创建一个dex文件，将我们完成的byte数组写入进去，这个dex也就是一个全新的dex</span></span><br><span class="line">			String str=<span class="string">"force/classes.dex"</span>;</span><br><span class="line">			File file =<span class="keyword">new</span> File(str);</span><br><span class="line">			<span class="keyword">if</span> (!file.exists()) &#123;</span><br><span class="line">				file.createNewFile();</span><br><span class="line">			&#125;</span><br><span class="line">			FileOutputStream localFileOutputStream=<span class="keyword">new</span> FileOutputStream(str);</span><br><span class="line">			localFileOutputStream.write(newdex);</span><br><span class="line">			localFileOutputStream.flush();</span><br><span class="line">			localFileOutputStream.close();</span><br><span class="line">			</span><br><span class="line">		&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">			<span class="comment">// <span class="doctag">TODO:</span> handle exception</span></span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">    <span class="comment">//这是apk的加密算法，使用每个byte异或一下</span></span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] encrpt(<span class="keyword">byte</span>[] srcdata) &#123;</span><br><span class="line">		<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;srcdata.length;i++) &#123;</span><br><span class="line">			srcdata[i]=(<span class="keyword">byte</span>)(<span class="number">0xFF</span>^srcdata[i]);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> srcdata;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">//checksum</span></span><br><span class="line">	<span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">fixCheckSumHeader</span><span class="params">(<span class="keyword">byte</span>[] dexBytes)</span> </span>&#123;</span><br><span class="line">		Adler32 adler32=<span class="keyword">new</span> Adler32();</span><br><span class="line">        <span class="comment">//一开始我没有搞的很清楚，通过重看checksum明白了，checksum使用的是Adler32算法，他是对整个dex文</span></span><br><span class="line">        <span class="comment">//件除了前8个字节的魔法数和4个字节自己以外进行文件的错误检查的，在这里我们使用Adler32对象update</span></span><br><span class="line">        <span class="comment">//方法重新生成checksum。</span></span><br><span class="line">		adler32.update(dexBytes, <span class="number">12</span>, dexBytes.length-<span class="number">12</span>);</span><br><span class="line">		<span class="keyword">long</span> value=adler32.getValue();</span><br><span class="line">		<span class="comment">//拿到的checksum</span></span><br><span class="line">		<span class="keyword">int</span> va=(<span class="keyword">int</span>)value;</span><br><span class="line">		<span class="keyword">byte</span>[] newcs=intToByte(va);</span><br><span class="line">		</span><br><span class="line">		<span class="keyword">byte</span>[] recs=<span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span>];</span><br><span class="line">        <span class="comment">//在之前已经知道了，dex文件是采用小端模式，即高字节放低地址，低字节放字高地址上</span></span><br><span class="line">		<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">4</span>;i++) &#123;</span><br><span class="line">			recs[i]=newcs[newcs.length-<span class="number">1</span>-i];</span><br><span class="line">			System.out.println(Integer.toHexString(newcs[i]));</span><br><span class="line">		&#125;</span><br><span class="line">        <span class="comment">//对dex的checksum进行修改</span></span><br><span class="line">		System.arraycopy(recs, <span class="number">0</span>, dexBytes, <span class="number">8</span>, <span class="number">4</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">    <span class="comment">//int转换成Byte</span></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] intToByte(<span class="keyword">int</span> number) &#123;</span><br><span class="line">		<span class="keyword">byte</span>[] b=<span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span>];</span><br><span class="line">		<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">3</span>;i&gt;=<span class="number">0</span>;i--) &#123;</span><br><span class="line">			b[i]=(<span class="keyword">byte</span>)(number%<span class="number">256</span>);</span><br><span class="line">			number&gt;&gt;=<span class="number">8</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> b;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//修改dex文件的签名</span></span><br><span class="line">	<span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">fixSHA1Header</span><span class="params">(<span class="keyword">byte</span>[] dexBytes)</span> <span class="keyword">throws</span> </span></span><br><span class="line"><span class="function">	NoSuchAlgorithmException</span>&#123;</span><br><span class="line">        <span class="comment">//dex文件的签名方式使用SHA-1加密</span></span><br><span class="line">		MessageDigest mDigest=MessageDigest.getInstance(<span class="string">"SHA-1"</span>);</span><br><span class="line">		mDigest.update(dexBytes, <span class="number">32</span>, dexBytes.length-<span class="number">32</span>);</span><br><span class="line">		<span class="keyword">byte</span>[] newdt=mDigest.digest();</span><br><span class="line">		System.arraycopy(newdt, <span class="number">0</span>, dexBytes, <span class="number">12</span>, <span class="number">20</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">    <span class="comment">//修改dex头文件的中的file_size</span></span><br><span class="line">	<span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">fixFileSizeHeader</span><span class="params">(<span class="keyword">byte</span>[] dexBytes)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">byte</span>[] newfs=intToByte(dexBytes.length);</span><br><span class="line">		<span class="keyword">byte</span>[] refs=<span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span>];</span><br><span class="line">		<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">4</span>;i++) &#123;</span><br><span class="line">			refs[i]=newfs[newfs.length-<span class="number">1</span>-i];</span><br><span class="line">		&#125;</span><br><span class="line">		System.arraycopy(refs, <span class="number">0</span>, dexBytes, <span class="number">32</span>, <span class="number">4</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">    <span class="comment">//将源APk转换为Byte数组</span></span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] readFileBytes(File file) <span class="keyword">throws</span> IOException&#123;</span><br><span class="line">		<span class="keyword">byte</span>[] arrayOfByte=<span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">1024</span>];</span><br><span class="line">		ByteArrayOutputStream localByteArrayOutputStream =<span class="keyword">new</span> ByteArrayOutputStream();</span><br><span class="line">		FileInputStream fis=<span class="keyword">new</span> FileInputStream(file);</span><br><span class="line">		<span class="keyword">while</span>(<span class="keyword">true</span>) &#123;</span><br><span class="line">			<span class="keyword">int</span> i=fis.read(arrayOfByte);</span><br><span class="line">			<span class="keyword">if</span> (i!=-<span class="number">1</span>) &#123;</span><br><span class="line">				localByteArrayOutputStream.write(arrayOfByte,<span class="number">0</span>,i);</span><br><span class="line">			&#125;<span class="keyword">else</span> &#123;</span><br><span class="line">				<span class="keyword">return</span> localByteArrayOutputStream.toByteArray();</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在想一想，现在合并之后的Apk是如何找到源Apk进行加载的呢。因为类的加载都是通过classloader来进行加载的，那是不是可以说，我们只需要更改脱壳程序中的classloader就可以让他来加载源Apk程序了，那么这里又产生了一个问题，那就是他只会加载源程序，但是脱壳程的逻辑并不会执行，那这样就会导致源程序无法被解密，这样运行也是失败的，所以我们需要使这个加载源程序的dexclassloader以原来的classloader为父节点，那么这样脱壳程序也能顺利的执行并对源程序解密。</p>
+<p>脱壳程序（这里我直接拿四哥的源码，在他基础上我继续分析一下）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**这个是脱壳程序的application，主要做了两个重要的部分，1首先对源加密的apk进行解密。2使用动态加载来加载</span></span><br><span class="line"><span class="comment">*源APK的application让他执行自己的生命周期，因为attachBaseContext()他要比oncreate()执行靠前，所以源apk</span></span><br><span class="line"><span class="comment">*的解密工作就需要在这个方法中做。首先从Apk中拿到合并后的dex文件，然后根据尾部的大小，将源APK取出来，这时*候，apk依然是byte数组，然后我们对他进行解密操作，另外自定义dexclassloader，来加载源APK。在脱壳程序中的</span></span><br><span class="line"><span class="comment">*oncreate方法中主要是通过反射将当前的Application替换为源程序的Application。其实在ActivityThread中有一*个内部类，AppBindData,这个类里有启动的app的所有详细信息，我们只需要将这个类里的属性值通过反射进行置换就*可以了。</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ProxyApplication</span> <span class="keyword">extends</span> <span class="title">Application</span></span>&#123;  </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String appkey = <span class="string">"APPLICATION_CLASS_NAME"</span>;  </span><br><span class="line">    <span class="keyword">private</span> String apkFileName;  </span><br><span class="line">    <span class="keyword">private</span> String odexPath;  </span><br><span class="line">    <span class="keyword">private</span> String libPath;  </span><br><span class="line">  </span><br><span class="line">    <span class="comment">//这是context 赋值  </span></span><br><span class="line">    <span class="meta">@Override</span>  </span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">attachBaseContext</span><span class="params">(Context base)</span> </span>&#123;  </span><br><span class="line">        <span class="keyword">super</span>.attachBaseContext(base);  </span><br><span class="line">        <span class="keyword">try</span> &#123;  </span><br><span class="line">            <span class="comment">//创建两个文件夹payload_odex，payload_lib 私有的，可写的文件目录  </span></span><br><span class="line">            File odex = <span class="keyword">this</span>.getDir(<span class="string">"payload_odex"</span>, MODE_PRIVATE);  </span><br><span class="line">            File libs = <span class="keyword">this</span>.getDir(<span class="string">"payload_lib"</span>, MODE_PRIVATE);  </span><br><span class="line">            odexPath = odex.getAbsolutePath();  </span><br><span class="line">            libPath = libs.getAbsolutePath();  </span><br><span class="line">            apkFileName = odex.getAbsolutePath() + <span class="string">"/payload.apk"</span>;  </span><br><span class="line">            File dexFile = <span class="keyword">new</span> File(apkFileName);  </span><br><span class="line">            Log.i(<span class="string">"demo"</span>, <span class="string">"apk size:"</span>+dexFile.length());  </span><br><span class="line">            <span class="keyword">if</span> (!dexFile.exists())  </span><br><span class="line">            &#123;  </span><br><span class="line">                dexFile.createNewFile();  <span class="comment">//在payload_odex文件夹内，创建payload.apk  </span></span><br><span class="line">                <span class="comment">// 读取程序classes.dex文件  </span></span><br><span class="line">                <span class="keyword">byte</span>[] dexdata = <span class="keyword">this</span>.readDexFileFromApk();  </span><br><span class="line">                  </span><br><span class="line">                <span class="comment">// 分离出解壳后的apk文件已用于动态加载  </span></span><br><span class="line">                <span class="keyword">this</span>.splitPayLoadFromDex(dexdata);  </span><br><span class="line">            &#125;  </span><br><span class="line">            <span class="comment">// 配置动态加载环境  </span></span><br><span class="line">            Object currentActivityThread = RefInvoke.invokeStaticMethod(  </span><br><span class="line">                    <span class="string">"android.app.ActivityThread"</span>, <span class="string">"currentActivityThread"</span>,  </span><br><span class="line">                    <span class="keyword">new</span> Class[] &#123;&#125;, <span class="keyword">new</span> Object[] &#123;&#125;);<span class="comment">//获取主线程对象 http://blog.csdn.net/myarrow/article/details/14223493  </span></span><br><span class="line">            String packageName = <span class="keyword">this</span>.getPackageName();<span class="comment">//当前apk的包名  </span></span><br><span class="line">            <span class="comment">//下面两句不是太理解  </span></span><br><span class="line">            ArrayMap mPackages = (ArrayMap) RefInvoke.getFieldOjbect(  </span><br><span class="line">                    <span class="string">"android.app.ActivityThread"</span>, currentActivityThread,  </span><br><span class="line">                    <span class="string">"mPackages"</span>);  </span><br><span class="line">            WeakReference wr = (WeakReference) mPackages.get(packageName);  </span><br><span class="line">            <span class="comment">//创建被加壳apk的DexClassLoader对象  加载apk内的类和本地代码（c/c++代码）  </span></span><br><span class="line">            DexClassLoader dLoader = <span class="keyword">new</span> DexClassLoader(apkFileName, odexPath,  </span><br><span class="line">                    libPath, (ClassLoader) RefInvoke.getFieldOjbect(  </span><br><span class="line">                            <span class="string">"android.app.LoadedApk"</span>, wr.get(), <span class="string">"mClassLoader"</span>));  </span><br><span class="line">            <span class="comment">//base.getClassLoader(); 是不是就等同于 (ClassLoader) RefInvoke.getFieldOjbect()? 有空验证下//?  </span></span><br><span class="line">            <span class="comment">//把当前进程的DexClassLoader 设置成了被加壳apk的DexClassLoader  ----有点c++中进程环境的意思~~  </span></span><br><span class="line">            RefInvoke.setFieldOjbect(<span class="string">"android.app.LoadedApk"</span>, <span class="string">"mClassLoader"</span>,  </span><br><span class="line">                    wr.get(), dLoader);  </span><br><span class="line">              </span><br><span class="line">            <span class="keyword">try</span>&#123;  </span><br><span class="line">                Object actObj = dLoader.loadClass(<span class="string">"com.example.forceapkobj.MainActivity"</span>);  </span><br><span class="line">                Log.i(<span class="string">"demo"</span>, <span class="string">"actObj:"</span>+actObj);  </span><br><span class="line">            &#125;<span class="keyword">catch</span>(Exception e)&#123;  </span><br><span class="line">                Log.i(<span class="string">"demo"</span>, <span class="string">"activity:"</span>+Log.getStackTraceString(e));  </span><br><span class="line">            &#125;  </span><br><span class="line">              </span><br><span class="line">  </span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;  </span><br><span class="line">            Log.i(<span class="string">"demo"</span>, <span class="string">"error:"</span>+Log.getStackTraceString(e));  </span><br><span class="line">            e.printStackTrace();  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    <span class="meta">@Override</span>  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">        &#123;  </span><br><span class="line">            <span class="comment">//loadResources(apkFileName);  </span></span><br><span class="line">              </span><br><span class="line">            Log.i(<span class="string">"demo"</span>, <span class="string">"onCreate"</span>);  </span><br><span class="line">            <span class="comment">// 如果源应用配置有Appliction对象，则替换为源应用Applicaiton，以便不影响源程序逻辑。  </span></span><br><span class="line">            String appClassName = <span class="keyword">null</span>;  </span><br><span class="line">            <span class="keyword">try</span> &#123;  </span><br><span class="line">                ApplicationInfo ai = <span class="keyword">this</span>.getPackageManager()  </span><br><span class="line">                        .getApplicationInfo(<span class="keyword">this</span>.getPackageName(),  </span><br><span class="line">                                PackageManager.GET_META_DATA);  </span><br><span class="line">                Bundle bundle = ai.metaData;  </span><br><span class="line">                <span class="keyword">if</span> (bundle != <span class="keyword">null</span> &amp;&amp; bundle.containsKey(<span class="string">"APPLICATION_CLASS_NAME"</span>)) &#123;  </span><br><span class="line">                    appClassName = bundle.getString(<span class="string">"APPLICATION_CLASS_NAME"</span>);<span class="comment">//className 是配置在xml文件中的。  </span></span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;  </span><br><span class="line">                    Log.i(<span class="string">"demo"</span>, <span class="string">"have no application class name"</span>);  </span><br><span class="line">                    <span class="keyword">return</span>;  </span><br><span class="line">                &#125;  </span><br><span class="line">            &#125; <span class="keyword">catch</span> (NameNotFoundException e) &#123;  </span><br><span class="line">                Log.i(<span class="string">"demo"</span>, <span class="string">"error:"</span>+Log.getStackTraceString(e));  </span><br><span class="line">                e.printStackTrace();  </span><br><span class="line">            &#125;  </span><br><span class="line">            <span class="comment">//有值的话调用该Applicaiton  </span></span><br><span class="line">            Object currentActivityThread = RefInvoke.invokeStaticMethod(  </span><br><span class="line">                    <span class="string">"android.app.ActivityThread"</span>, <span class="string">"currentActivityThread"</span>,  </span><br><span class="line">                    <span class="keyword">new</span> Class[] &#123;&#125;, <span class="keyword">new</span> Object[] &#123;&#125;);  </span><br><span class="line">            Object mBoundApplication = RefInvoke.getFieldOjbect(  </span><br><span class="line">                    <span class="string">"android.app.ActivityThread"</span>, currentActivityThread,  </span><br><span class="line">                    <span class="string">"mBoundApplication"</span>);  </span><br><span class="line">            Object loadedApkInfo = RefInvoke.getFieldOjbect(  </span><br><span class="line">                    <span class="string">"android.app.ActivityThread$AppBindData"</span>,  </span><br><span class="line">                    mBoundApplication, <span class="string">"info"</span>);  </span><br><span class="line">            <span class="comment">//把当前进程的mApplication 设置成了null  </span></span><br><span class="line">            RefInvoke.setFieldOjbect(<span class="string">"android.app.LoadedApk"</span>, <span class="string">"mApplication"</span>,  </span><br><span class="line">                    loadedApkInfo, <span class="keyword">null</span>);  </span><br><span class="line">            Object oldApplication = RefInvoke.getFieldOjbect(  </span><br><span class="line">                    <span class="string">"android.app.ActivityThread"</span>, currentActivityThread,  </span><br><span class="line">                    <span class="string">"mInitialApplication"</span>);  </span><br><span class="line">            <span class="comment">//http://www.codeceo.com/article/android-context.html  </span></span><br><span class="line">            ArrayList&lt;Application&gt; mAllApplications = (ArrayList&lt;Application&gt;) RefInvoke  </span><br><span class="line">                    .getFieldOjbect(<span class="string">"android.app.ActivityThread"</span>,  </span><br><span class="line">                            currentActivityThread, <span class="string">"mAllApplications"</span>);  </span><br><span class="line">            mAllApplications.remove(oldApplication);<span class="comment">//删除oldApplication  </span></span><br><span class="line">              </span><br><span class="line">            ApplicationInfo appinfo_In_LoadedApk = (ApplicationInfo) RefInvoke  </span><br><span class="line">                    .getFieldOjbect(<span class="string">"android.app.LoadedApk"</span>, loadedApkInfo,  </span><br><span class="line">                            <span class="string">"mApplicationInfo"</span>);  </span><br><span class="line">            ApplicationInfo appinfo_In_AppBindData = (ApplicationInfo) RefInvoke  </span><br><span class="line">                    .getFieldOjbect(<span class="string">"android.app.ActivityThread$AppBindData"</span>,  </span><br><span class="line">                            mBoundApplication, <span class="string">"appInfo"</span>);  </span><br><span class="line">            appinfo_In_LoadedApk.className = appClassName;  </span><br><span class="line">            appinfo_In_AppBindData.className = appClassName;  </span><br><span class="line">            Application app = (Application) RefInvoke.invokeMethod(  </span><br><span class="line">                    <span class="string">"android.app.LoadedApk"</span>, <span class="string">"makeApplication"</span>, loadedApkInfo,  </span><br><span class="line">                    <span class="keyword">new</span> Class[] &#123; Boolean.class, Instrumentation.class &#125;,  </span><br><span class="line">                    <span class="keyword">new</span> Object[] &#123; <span class="keyword">false</span>, <span class="keyword">null</span> &#125;);<span class="comment">//执行 makeApplication（false,null）  </span></span><br><span class="line">            RefInvoke.setFieldOjbect(<span class="string">"android.app.ActivityThread"</span>,  </span><br><span class="line">                    <span class="string">"mInitialApplication"</span>, currentActivityThread, app);  </span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">           </span><br><span class="line">            <span class="comment">//这里我还有点搞不明白。我猜应该是，将原来的provider替换为源apk的，这样才能保证程序的正常</span></span><br><span class="line">            ArrayMap mProviderMap = (ArrayMap) RefInvoke.getFieldOjbect(  </span><br><span class="line">                    <span class="string">"android.app.ActivityThread"</span>, currentActivityThread,  </span><br><span class="line">                    <span class="string">"mProviderMap"</span>);  </span><br><span class="line">            Iterator it = mProviderMap.values().iterator();  </span><br><span class="line">            <span class="keyword">while</span> (it.hasNext()) &#123;  </span><br><span class="line">                Object providerClientRecord = it.next();  </span><br><span class="line">                Object localProvider = RefInvoke.getFieldOjbect(  </span><br><span class="line">                        <span class="string">"android.app.ActivityThread$ProviderClientRecord"</span>,  </span><br><span class="line">                        providerClientRecord, <span class="string">"mLocalProvider"</span>);  </span><br><span class="line">                RefInvoke.setFieldOjbect(<span class="string">"android.content.ContentProvider"</span>,  </span><br><span class="line">                        <span class="string">"mContext"</span>, localProvider, app);  </span><br><span class="line">            &#125;  </span><br><span class="line"></span><br><span class="line">              </span><br><span class="line">            app.onCreate();  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    <span class="comment">/** </span></span><br><span class="line"><span class="comment">     * 释放被加壳的apk文件，so文件 </span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> data </span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> IOException </span></span><br><span class="line"><span class="comment">     */</span>  </span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">splitPayLoadFromDex</span><span class="params">(<span class="keyword">byte</span>[] apkdata)</span> <span class="keyword">throws</span> IOException </span>&#123;  </span><br><span class="line">        <span class="keyword">int</span> ablen = apkdata.length;  </span><br><span class="line">        <span class="comment">//取被加壳apk的长度   这里的长度取值，对应加壳时长度的赋值都可以做些简化  </span></span><br><span class="line">        <span class="keyword">byte</span>[] dexlen = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span>];  </span><br><span class="line">        System.arraycopy(apkdata, ablen - <span class="number">4</span>, dexlen, <span class="number">0</span>, <span class="number">4</span>);  </span><br><span class="line">        ByteArrayInputStream bais = <span class="keyword">new</span> ByteArrayInputStream(dexlen);  </span><br><span class="line">        DataInputStream in = <span class="keyword">new</span> DataInputStream(bais);  </span><br><span class="line">        <span class="keyword">int</span> readInt = in.readInt();  </span><br><span class="line">        System.out.println(Integer.toHexString(readInt));  </span><br><span class="line">        <span class="keyword">byte</span>[] newdex = <span class="keyword">new</span> <span class="keyword">byte</span>[readInt];  </span><br><span class="line">        <span class="comment">//把被加壳apk内容拷贝到newdex中  </span></span><br><span class="line">        System.arraycopy(apkdata, ablen - <span class="number">4</span> - readInt, newdex, <span class="number">0</span>, readInt);  </span><br><span class="line">        <span class="comment">//这里应该加上对于apk的解密操作，若加壳是加密处理的话  </span></span><br><span class="line">        <span class="comment">//?  </span></span><br><span class="line">          </span><br><span class="line">        <span class="comment">//对源程序Apk进行解密  </span></span><br><span class="line">        newdex = decrypt(newdex);  </span><br><span class="line">          </span><br><span class="line">        <span class="comment">//写入apk文件     </span></span><br><span class="line">        File file = <span class="keyword">new</span> File(apkFileName);  </span><br><span class="line">        <span class="keyword">try</span> &#123;  </span><br><span class="line">            FileOutputStream localFileOutputStream = <span class="keyword">new</span> FileOutputStream(file);  </span><br><span class="line">            localFileOutputStream.write(newdex);  </span><br><span class="line">            localFileOutputStream.close();  </span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException localIOException) &#123;  </span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(localIOException);  </span><br><span class="line">        &#125;  </span><br><span class="line">          </span><br><span class="line">        <span class="comment">//分析被加壳的apk文件  </span></span><br><span class="line">        ZipInputStream localZipInputStream = <span class="keyword">new</span> ZipInputStream(  </span><br><span class="line">                <span class="keyword">new</span> BufferedInputStream(<span class="keyword">new</span> FileInputStream(file)));  </span><br><span class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;  </span><br><span class="line">            ZipEntry localZipEntry = localZipInputStream.getNextEntry();<span class="comment">//不了解这个是否也遍历子目录，看样子应该是遍历的  </span></span><br><span class="line">            <span class="keyword">if</span> (localZipEntry == <span class="keyword">null</span>) &#123;  </span><br><span class="line">                localZipInputStream.close();  </span><br><span class="line">                <span class="keyword">break</span>;  </span><br><span class="line">            &#125;  </span><br><span class="line">            <span class="comment">//取出被加壳apk用到的so文件，放到 libPath中（data/data/包名/payload_lib)  </span></span><br><span class="line">            String name = localZipEntry.getName();  </span><br><span class="line">            <span class="keyword">if</span> (name.startsWith(<span class="string">"lib/"</span>) &amp;&amp; name.endsWith(<span class="string">".so"</span>)) &#123;  </span><br><span class="line">                File storeFile = <span class="keyword">new</span> File(libPath + <span class="string">"/"</span>  </span><br><span class="line">                        + name.substring(name.lastIndexOf(<span class="string">'/'</span>)));  </span><br><span class="line">                storeFile.createNewFile();  </span><br><span class="line">                FileOutputStream fos = <span class="keyword">new</span> FileOutputStream(storeFile);  </span><br><span class="line">                <span class="keyword">byte</span>[] arrayOfByte = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">1024</span>];  </span><br><span class="line">                <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;  </span><br><span class="line">                    <span class="keyword">int</span> i = localZipInputStream.read(arrayOfByte);  </span><br><span class="line">                    <span class="keyword">if</span> (i == -<span class="number">1</span>)  </span><br><span class="line">                        <span class="keyword">break</span>;  </span><br><span class="line">                    fos.write(arrayOfByte, <span class="number">0</span>, i);  </span><br><span class="line">                &#125;  </span><br><span class="line">                fos.flush();  </span><br><span class="line">                fos.close();  </span><br><span class="line">            &#125;  </span><br><span class="line">            localZipInputStream.closeEntry();  </span><br><span class="line">        &#125;  </span><br><span class="line">        localZipInputStream.close();  </span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    <span class="comment">/** </span></span><br><span class="line"><span class="comment">     * 从apk包里面获取dex文件内容（byte） </span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> </span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> IOException </span></span><br><span class="line"><span class="comment">     */</span>  </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">byte</span>[] readDexFileFromApk() <span class="keyword">throws</span> IOException &#123;  </span><br><span class="line">        ByteArrayOutputStream dexByteArrayOutputStream = <span class="keyword">new</span> ByteArrayOutputStream();  </span><br><span class="line">        ZipInputStream localZipInputStream = <span class="keyword">new</span> ZipInputStream(  </span><br><span class="line">                <span class="keyword">new</span> BufferedInputStream(<span class="keyword">new</span> FileInputStream(  </span><br><span class="line">                        <span class="keyword">this</span>.getApplicationInfo().sourceDir)));  </span><br><span class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;  </span><br><span class="line">            ZipEntry localZipEntry = localZipInputStream.getNextEntry();  </span><br><span class="line">            <span class="keyword">if</span> (localZipEntry == <span class="keyword">null</span>) &#123;  </span><br><span class="line">                localZipInputStream.close();  </span><br><span class="line">                <span class="keyword">break</span>;  </span><br><span class="line">            &#125;  </span><br><span class="line">            <span class="keyword">if</span> (localZipEntry.getName().equals(<span class="string">"classes.dex"</span>)) &#123;  </span><br><span class="line">                <span class="keyword">byte</span>[] arrayOfByte = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">1024</span>];  </span><br><span class="line">                <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;  </span><br><span class="line">                    <span class="keyword">int</span> i = localZipInputStream.read(arrayOfByte);  </span><br><span class="line">                    <span class="keyword">if</span> (i == -<span class="number">1</span>)  </span><br><span class="line">                        <span class="keyword">break</span>;  </span><br><span class="line">                    dexByteArrayOutputStream.write(arrayOfByte, <span class="number">0</span>, i);  </span><br><span class="line">                &#125;  </span><br><span class="line">            &#125;  </span><br><span class="line">            localZipInputStream.closeEntry();  </span><br><span class="line">        &#125;  </span><br><span class="line">        localZipInputStream.close();  </span><br><span class="line">        <span class="keyword">return</span> dexByteArrayOutputStream.toByteArray();  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">    <span class="comment">// //直接返回数据，读者可以添加自己解密方法  </span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">byte</span>[] decrypt(<span class="keyword">byte</span>[] srcdata) &#123;  </span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;srcdata.length;i++)&#123;  </span><br><span class="line">            srcdata[i] = (<span class="keyword">byte</span>)(<span class="number">0xFF</span> ^ srcdata[i]);  </span><br><span class="line">        &#125;  </span><br><span class="line">        <span class="keyword">return</span> srcdata;  </span><br><span class="line">    &#125;  </span><br><span class="line">      </span><br><span class="line">      </span><br><span class="line">    <span class="comment">//以下是加载资源  </span></span><br><span class="line">    <span class="keyword">protected</span> AssetManager mAssetManager;<span class="comment">//资源管理器    </span></span><br><span class="line">    <span class="keyword">protected</span> Resources mResources;<span class="comment">//资源    </span></span><br><span class="line">    <span class="keyword">protected</span> Theme mTheme;<span class="comment">//主题    </span></span><br><span class="line">      </span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">loadResources</span><span class="params">(String dexPath)</span> </span>&#123;    </span><br><span class="line">        <span class="keyword">try</span> &#123;    </span><br><span class="line">            AssetManager assetManager = AssetManager.class.newInstance();    </span><br><span class="line">            Method addAssetPath = assetManager.getClass().getMethod(<span class="string">"addAssetPath"</span>, String.class);    </span><br><span class="line">            addAssetPath.invoke(assetManager, dexPath);    </span><br><span class="line">            mAssetManager = assetManager;    </span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;    </span><br><span class="line">            Log.i(<span class="string">"inject"</span>, <span class="string">"loadResource error:"</span>+Log.getStackTraceString(e));  </span><br><span class="line">            e.printStackTrace();    </span><br><span class="line">        &#125;    </span><br><span class="line">        Resources superRes = <span class="keyword">super</span>.getResources();    </span><br><span class="line">        superRes.getDisplayMetrics();    </span><br><span class="line">        superRes.getConfiguration();    </span><br><span class="line">        mResources = <span class="keyword">new</span> Resources(mAssetManager, superRes.getDisplayMetrics(),superRes.getConfiguration());    </span><br><span class="line">        mTheme = mResources.newTheme();    </span><br><span class="line">        mTheme.setTo(<span class="keyword">super</span>.getTheme());  </span><br><span class="line">    &#125;    </span><br><span class="line">      </span><br><span class="line">    <span class="meta">@Override</span>    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> AssetManager <span class="title">getAssets</span><span class="params">()</span> </span>&#123;    </span><br><span class="line">        <span class="keyword">return</span> mAssetManager == <span class="keyword">null</span> ? <span class="keyword">super</span>.getAssets() : mAssetManager;    </span><br><span class="line">    &#125;    </span><br><span class="line">      </span><br><span class="line">    <span class="meta">@Override</span>    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> Resources <span class="title">getResources</span><span class="params">()</span> </span>&#123;    </span><br><span class="line">        <span class="keyword">return</span> mResources == <span class="keyword">null</span> ? <span class="keyword">super</span>.getResources() : mResources;    </span><br><span class="line">    &#125;    </span><br><span class="line">      </span><br><span class="line">    <span class="meta">@Override</span>    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> Theme <span class="title">getTheme</span><span class="params">()</span> </span>&#123;    </span><br><span class="line">        <span class="keyword">return</span> mTheme == <span class="keyword">null</span> ? <span class="keyword">super</span>.getTheme() : mTheme;    </span><br><span class="line">    &#125;   </span><br><span class="line">      </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后，我们就把脱壳程序中的dex文件替换为合并之后的dex文件，再重新签个名。但是我走到这一步，总是出现安装失败的问题，我猜应该是重新签名索引发的问题，我将继续实验。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/02/26/smali/" rel="next" title="smali语法">
+                <i class="fa fa-chevron-left"></i> smali语法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/01/java/" rel="prev" title="java的类加载器">
+                java的类加载器 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="lv-container" data-id="city" data-uid="MTAyMC8zNDEwMC8xMDYzOA=="></div>
+    </div>
+  
+  </div>
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/head.jpg"
+                alt="wula meng" />
+            
+              <p class="site-author-name" itemprop="name">wula meng</p>
+              <p class="site-description motion-element" itemprop="description">吾日三省吾身</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么要对APK加固"><span class="nav-number">1.</span> <span class="nav-text">为什么要对APK加固</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#加固原理"><span class="nav-number">2.</span> <span class="nav-text">加固原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Dex文件解析"><span class="nav-number">3.</span> <span class="nav-text">Dex文件解析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Apk加固具体步骤"><span class="nav-number">4.</span> <span class="nav-text">Apk加固具体步骤</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wula meng</span>
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+  </div>
+  
+   <canvas class="fireworks" style="position: fixed;left: 0;top: 0;z-index: 1; pointer-events: none;" ></canvas> 
+   <script type="text/javascript" src="//cdn.bootcss.com/animejs/2.2.0/anime.min.js"></script> 
+   <script type="text/javascript" src="/js/src/fireworks.js"></script>
+
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+    <script type="text/javascript">
+      (function(d, s) {
+        var j, e = d.getElementsByTagName(s)[0];
+        if (typeof LivereTower === 'function') { return; }
+        j = d.createElement(s);
+        j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+        j.async = true;
+        e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    </script>
+  
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>
