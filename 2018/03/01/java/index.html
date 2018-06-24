@@ -81,8 +81,6 @@
 
 
 
-  <link rel="alternate" href="/atom.xml" title="Wula Meng" type="application/atom+xml" />
-
 
 
 
@@ -96,14 +94,14 @@
 <meta property="og:site_name" content="Wula Meng">
 <meta property="og:description" content="类加载器的概念 类加载器顾名思义，就是在程序运行时加载java的字节码文件的一个东西。当我们运行java程序时，编写好的源java文件(以.java为后缀的文件)被编译为java的字节码文件(以.class为后缀的文件)，当运行时需要这个类的时候，类加载器就会把需要的java字节码文件加载并且newInstance()生成它的对象，放到jvm虚拟机内存中，让jvm使用。  类加载器的分类 类加载">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://yoursite.com/images/classloader.png">
-<meta property="og:image" content="http://yoursite.com/images/non.png">
-<meta property="og:image" content="http://yoursite.com/images/result.png">
-<meta property="og:updated_time" content="2018-06-23T16:09:13.262Z">
+<meta property="og:image" content="http://ousaim1qx.bkt.clouddn.com/5YTXZK4DT65B%5D$IP%7DS$6%25C9.png">
+<meta property="og:image" content="http://ousaim1qx.bkt.clouddn.com/20140101125755203.png">
+<meta property="og:image" content="http://ousaim1qx.bkt.clouddn.com/9X3H8HQGW%7D%60%5DMUY57~@XD@Y.png">
+<meta property="og:updated_time" content="2018-06-24T09:24:08.713Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="java的类加载器">
 <meta name="twitter:description" content="类加载器的概念 类加载器顾名思义，就是在程序运行时加载java的字节码文件的一个东西。当我们运行java程序时，编写好的源java文件(以.java为后缀的文件)被编译为java的字节码文件(以.class为后缀的文件)，当运行时需要这个类的时候，类加载器就会把需要的java字节码文件加载并且newInstance()生成它的对象，放到jvm虚拟机内存中，让jvm使用。  类加载器的分类 类加载">
-<meta name="twitter:image" content="http://yoursite.com/images/classloader.png">
+<meta name="twitter:image" content="http://ousaim1qx.bkt.clouddn.com/5YTXZK4DT65B%5D$IP%7DS$6%25C9.png">
 
 
 
@@ -305,7 +303,7 @@
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="wula meng">
       <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/head.jpg">
+      <meta itemprop="image" content="http://ousaim1qx.bkt.clouddn.com/image/png/head.pnghead.jpg">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -345,8 +343,8 @@
               
                 <span class="post-meta-item-text">更新于&#58;</span>
               
-              <time title="更新于" itemprop="dateModified" datetime="2018-06-24T00:09:13+08:00">
-                2018-06-23
+              <time title="更新于" itemprop="dateModified" datetime="2018-06-24T17:24:08+08:00">
+                2018-06-24
               </time>
             
           </span>
@@ -426,12 +424,12 @@
 <blockquote>
 <h3 id="类加载器的分类"><a href="#类加载器的分类" class="headerlink" title="类加载器的分类"></a>类加载器的分类</h3></blockquote>
 <p>类加载器这个概念自JDK1.0时就有了，好像一开始sun公司来定义它是因为它可以来加载从网络中取到的java程序。类加载器符合树形结构，如下图：</p>
-<p><img src="/images/classloader.png" alt=""></p>
+<p><img src="http://ousaim1qx.bkt.clouddn.com/5YTXZK4DT65B%5D$IP%7DS$6%25C9.png" alt=""></p>
 <p>首先在这里再补充一个概念，类加载器也是类，也是用java语言编写的。好了，那就继续看一下每个类加载器的解释，BootStrap是嵌在JVM内核中的加载器，该加载器是用C++语言写的，主要负载加载JAVA_HOME/lib下的类库，启动类加载器无法被应用程序直接使用。ExtClassLoader又称之为扩展类加载器，它主要来负责加载jre/lib/ext下的类库，如果在此文件夹下有jvm所需要的类，那么此类会被ExtClassLoader来加载。AppClassLoader也是系统类加载器，也是应用程序的类加载器，他负责加载classpath目录下所有的class和jar文件。</p>
 <blockquote>
 <h3 id="类加载器的工作模式"><a href="#类加载器的工作模式" class="headerlink" title="类加载器的工作模式"></a>类加载器的工作模式</h3></blockquote>
 <p>类加载器并不是通常意义上的继承关系，而是一种双亲委派机制，我通过一张图，来讲解一下，此图为盗用姜维大神的图：</p>
-<p><img src="/images/non.png" alt=""></p>
+<p><img src="http://ousaim1qx.bkt.clouddn.com/20140101125755203.png" alt=""></p>
 <p>从这张图中，可以很清楚，类加载器的工作机制，在类加载时，自定义的类加载器首先会委托给AppClassLoader，AppClassLoader再委托给ExtClassLoader，最后ExtClassLoader委托BootStrap，BootStrap先去加载，如果加载成功，类加载就结束了，不成功就会交给ExtClassLoader去加载，成功就结束，不成功就继续交给AppClassLoader去加载，成功就结束，不成功继续交给自定义的类加载器，成功就结束，不成功就会报ClassNotFoundException异常，整个类加载过程结束，这也就很好的说明了为什么类加载器的工作原理是双亲委托机制。</p>
 <blockquote>
 <h3 id="java源码中的ClassLoader运行机制"><a href="#java源码中的ClassLoader运行机制" class="headerlink" title="java源码中的ClassLoader运行机制"></a>java源码中的ClassLoader运行机制</h3></blockquote>
@@ -452,7 +450,7 @@
 <p>最后我们需要一个测试类；</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">		<span class="comment">// TODO Auto-generated method stub</span></span><br><span class="line">        <span class="keyword">try</span> &#123;  </span><br><span class="line">            Class class1 = </span><br><span class="line">            <span class="keyword">new</span> CustomClassLoader(<span class="string">"bin\\org\\hahah\\demo"</span>).loadClass(<span class="string">"ClassLoaderJava"</span>);  </span><br><span class="line">            Object object = class1.newInstance();</span><br><span class="line">            System.out.println(<span class="string">"这是什么ClassLoader:"</span>+object.getClass().getClassLoader().getClass().getName());  </span><br><span class="line">            System.out.println(object);  </span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e1) &#123;  </span><br><span class="line">            e1.printStackTrace();  </span><br><span class="line">        &#125;  </span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>然后我们运行，Console所打印的信息，正是我们希望看到的结果；</p>
-<p><img src="/images/result.png" alt=""></p>
+<p><img src="http://ousaim1qx.bkt.clouddn.com/9X3H8HQGW%7D%60%5DMUY57~@XD@Y.png" alt=""></p>
 <p>end！</p>
 
       
@@ -567,11 +565,11 @@
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
               <img class="site-author-image" itemprop="image"
-                src="/images/head.jpg"
+                src="http://ousaim1qx.bkt.clouddn.com/image/png/head.pnghead.jpg"
                 alt="wula meng" />
             
               <p class="site-author-name" itemprop="name">wula meng</p>
-              <p class="site-description motion-element" itemprop="description">吾日三省吾身</p>
+              <p class="site-description motion-element" itemprop="description">bravo</p>
           </div>
 
           <nav class="site-state motion-element">
@@ -611,13 +609,6 @@
 
           </nav>
 
-          
-            <div class="feed-link motion-element">
-              <a href="/atom.xml" rel="alternate">
-                <i class="fa fa-rss"></i>
-                RSS
-              </a>
-            </div>
           
 
           <div class="links-of-author motion-element">
