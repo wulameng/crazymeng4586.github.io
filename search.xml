@@ -1,425 +1,72 @@
-<!DOCTYPE html>
-
-
-
-  
-
-
-<html class="theme-next gemini use-motion" lang="zh-Hans">
-<head>
-  <meta charset="UTF-8"/>
-<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
-<meta name="theme-color" content="#222">
-
-
-
-  
+<?xml version="1.0" encoding="utf-8"?>
+<search> 
   
     
-    
-  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
-  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
-
-
-
-
-
-
-
-<meta http-equiv="Cache-Control" content="no-transform" />
-<meta http-equiv="Cache-Control" content="no-siteapp" />
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-  
-  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
-
-
-
-
-
-
-
-<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
-
-<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
-
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
-
-
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.3">
-
-
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.3">
-
-
-  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
-
-
-
-
-
-  <meta name="keywords" content="android," />
-
-
-
-
-
-
-
-
-
-
-<meta name="description" content="前言 关于so文件格式的分析，网上已经有很多，很好的文章了，本菜为了能加深对so文件格式的理解，于是就写此篇文章，来加深对于so文件格式的理解。  分析 对于so文件格式的分析我需要一个elf.h这个头文件 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152">
-<meta name="keywords" content="android">
-<meta property="og:type" content="article">
-<meta property="og:title" content="so文件格式(一)">
-<meta property="og:url" content="http://yoursite.com/2018/03/16/android/index.html">
-<meta property="og:site_name" content="Wula Meng">
-<meta property="og:description" content="前言 关于so文件格式的分析，网上已经有很多，很好的文章了，本菜为了能加深对so文件格式的理解，于是就写此篇文章，来加深对于so文件格式的理解。  分析 对于so文件格式的分析我需要一个elf.h这个头文件 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152">
-<meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://yoursite.com/images/2.png">
-<meta property="og:image" content="http://yoursite.com/images/1.png">
-<meta property="og:image" content="http://yoursite.com/images/3.png">
-<meta property="og:image" content="http://yoursite.com/images/44.png">
-<meta property="og:updated_time" content="2018-06-23T16:15:21.253Z">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="so文件格式(一)">
-<meta name="twitter:description" content="前言 关于so文件格式的分析，网上已经有很多，很好的文章了，本菜为了能加深对so文件格式的理解，于是就写此篇文章，来加深对于so文件格式的理解。  分析 对于so文件格式的分析我需要一个elf.h这个头文件 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152">
-<meta name="twitter:image" content="http://yoursite.com/images/2.png">
-
-
-
-<script type="text/javascript" id="hexo.configurations">
-  var NexT = window.NexT || {};
-  var CONFIG = {
-    root: '/',
-    scheme: 'Gemini',
-    version: '5.1.3',
-    sidebar: {"position":"right","display":"hide","offset":30,"b2t":true,"scrollpercent":true,"onmobile":false},
-    fancybox: true,
-    tabs: true,
-    motion: {"enable":true,"async":true,"transition":{"post_block":"shrinkIn","post_header":"perspectiveRightIn","post_body":"slideUpIn","coll_header":"flipXIn","sidebar":"slideRightIn"}},
-    duoshuo: {
-      userId: '0',
-      author: '博主'
-    },
-    algolia: {
-      applicationID: '',
-      apiKey: '',
-      indexName: '',
-      hits: {"per_page":10},
-      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
-    }
-  };
-</script>
-
-
-
-  <link rel="canonical" href="http://yoursite.com/2018/03/16/android/"/>
-
-
-
-
-
-  <title>so文件格式(一) | Wula Meng</title>
-  
-
-
-
-
-
-  <script type="text/javascript">
-    var _hmt = _hmt || [];
-    (function() {
-      var hm = document.createElement("script");
-      hm.src = "https://hm.baidu.com/hm.js?1e7e8c591300bc759ce43c45d8503fac";
-      var s = document.getElementsByTagName("script")[0];
-      s.parentNode.insertBefore(hm, s);
-    })();
-  </script>
-
-
-
-
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
-
-  
-  
-    
-  
-
-  <div class="container sidebar-position-right page-post-detail">
-    <div class="headband"></div>
-
-    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
-      <div class="header-inner"><div class="site-brand-wrapper">
-  <div class="site-meta ">
-    
-
-    <div class="custom-logo-site-title">
-      <a href="/"  class="brand" rel="start">
-        <span class="logo-line-before"><i></i></span>
-        <span class="site-title">Wula Meng</span>
-        <span class="logo-line-after"><i></i></span>
-      </a>
-    </div>
-      
-        <p class="site-subtitle">晨起动征铎</p>
-      
-  </div>
-
-  <div class="site-nav-toggle">
-    <button>
-      <span class="btn-bar"></span>
-      <span class="btn-bar"></span>
-      <span class="btn-bar"></span>
-    </button>
-  </div>
-</div>
-
-<nav class="site-nav">
-  
-
-  
-    <ul id="menu" class="menu">
+    <entry>
+      <title><![CDATA[Hello World]]></title>
+      <url>/2018/06/21/essay/</url>
+      <content type="html"><![CDATA[<h1 id="新的旅程，新的开始！"><a href="#新的旅程，新的开始！" class="headerlink" title="新的旅程，新的开始！"></a>新的旅程，新的开始！</h1><p>####今天正式开始在我的这个个人主页上进行，Android技术的学习，无论是反编译还是开发，有什么个人心得和体会我都将发布到此。</p>
+<p> <strong>对了，HelloWorld！</strong></p>
+<hr>
+]]></content>
       
         
-        <li class="menu-item menu-item-home">
-          <a href="/" rel="section">
+        <tags>
             
-              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            <tag> 随笔 </tag>
             
-            首页
-          </a>
-        </li>
-      
+        </tags>
         
-        <li class="menu-item menu-item-tags">
-          <a href="/tags" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
-            
-            标签
-          </a>
-        </li>
-      
-        
-        <li class="menu-item menu-item-categories">
-          <a href="/categories" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
-            
-            分类
-          </a>
-        </li>
-      
-
-      
-        <li class="menu-item menu-item-search">
-          
-            <a href="javascript:;" class="popup-trigger">
-          
-            
-              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
-            
-            搜索
-          </a>
-        </li>
-      
-    </ul>
-  
-
-  
-    <div class="site-search">
-      
-  <div class="popup search-popup local-search-popup">
-  <div class="local-search-header clearfix">
-    <span class="search-icon">
-      <i class="fa fa-search"></i>
-    </span>
-    <span class="popup-btn-close">
-      <i class="fa fa-times-circle"></i>
-    </span>
-    <div class="local-search-input-wrapper">
-      <input autocomplete="off"
-             placeholder="搜索..." spellcheck="false"
-             type="text" id="local-search-input">
-    </div>
-  </div>
-  <div id="local-search-result"></div>
-</div>
-
-
-
-    </div>
-  
-</nav>
-
-
-
- </div>
-    </header>
-
-    <main id="main" class="main">
-      <div class="main-inner">
-        <div class="content-wrap">
-          <div id="content" class="content">
-            
-
-  <div id="posts" class="posts-expand">
+    </entry>
     
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/03/16/android/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="wula meng">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/head.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Wula Meng">
-    </span>
-
-    
-      <header class="post-header">
-
+    <entry>
+      <title><![CDATA[什么是目标文件]]></title>
+      <url>/2018/03/20/android/</url>
+      <content type="html"><![CDATA[<blockquote>
+<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3></blockquote>
+<p>在学习elf文件格式的中他的头文件的时候，有关于目标文件的这个概念一直模棱两可，被弄得云里雾里的，今天在读《程序员自我修养》一书后，我对这个知识的理解有了初步的概念。那就写下来记录一下，目标文件是个啥。</p>
+<blockquote>
+<h3 id="代码处理过程"><a href="#代码处理过程" class="headerlink" title="代码处理过程"></a>代码处理过程</h3></blockquote>
+<p>我要知道什么是目标文件，必须清楚，一份源代码是如何被计算机运行起来的，比如一个简单的打印helloworld程序，他到底是如何打印出来被我们看见的(我只大体说出他的流程，不考虑他的细节)。好，首先写一个简单的helloworld程序。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//test.c</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"hello world\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面是一段用c语言来写的程序，这份源代码，想要被计算机认识，执行需要经过如下4个过程：</p>
+<p><img src="/images/progress.jpg" alt=""></p>
+<h4 id="预处理"><a href="#预处理" class="headerlink" title="预处理"></a>预处理</h4><p>使用命令<code>gcc -E test.c -o test.i</code></p>
+<p>1.在这个阶段，源代码中所有的<code>#define</code>会被删除，并且会展开所有的宏定义。</p>
+<p>2.处理所有条件预编译指令，如：<code>#if,#ifdef,#else,#elif,#endif</code>。</p>
+<p>3.处理<code>#include</code>预编译指令，将包含的文件插入到预编译指令的位置，过程递归，引用到的其他文件可能还会包含其他文件。</p>
+<p>4.删除所有注释符号。</p>
+<p>5.添加行号和文件标识，如<code># 2 &quot;test.c&quot; 2</code>，</p>
+<p>6.保留所有<code>#pragma</code>编译器指令，编译器所需。</p>
+<h4 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h4><p>使用命令<code>gcc -S test.i -o test.s</code></p>
+<p>这个过程就是将预处理好的文件，进行词法分析，语法分析，语义分析，优化所生成的汇编代码文件。</p>
+<h4 id="汇编"><a href="#汇编" class="headerlink" title="汇编"></a>汇编</h4><p>使用命令<code>gcc -c test.s -o test.o</code></p>
+<p>在这个过程中，就是将汇编代码转换成机器可以识别的二进制的机器指令。</p>
+<h4 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h4><p>大体上就是将所需要的各种文件链接起来形成可执行的最终文件。</p>
+<blockquote>
+<h3 id="目标文件是什么"><a href="#目标文件是什么" class="headerlink" title="目标文件是什么"></a>目标文件是什么</h3></blockquote>
+<p>目标文件是源代码编译后未被链接的中间文件（linux系统上的.o文件），他与最终的可执行文件的文件结构十分相似，他就是Linux系统上的elf文件，elf文件格式具体分成4类：</p>
+]]></content>
+      
+        <categories>
+            
+            <category> android </category>
+            
+        </categories>
         
         
-          <h1 class="post-title" itemprop="name headline">so文件格式(一)</h1>
+        <tags>
+            
+            <tag> android </tag>
+            
+        </tags>
         
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-16T19:26:59+08:00">
-                2018-03-16
-              </time>
-            
-
-            
-              <span class="post-meta-divider">|</span>
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-check-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">更新于&#58;</span>
-              
-              <time title="更新于" itemprop="dateModified" datetime="2018-06-24T00:15:21+08:00">
-                2018-06-23
-              </time>
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/android/" itemprop="url" rel="index">
-                    <span itemprop="name">android</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  8,416 字
-                </span>
-              
-
-              
-
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
+    </entry>
     
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        <blockquote>
+    <entry>
+      <title><![CDATA[so文件格式(一)]]></title>
+      <url>/2018/03/16/android/</url>
+      <content type="html"><![CDATA[<blockquote>
 <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3></blockquote>
 <p>关于so文件格式的分析，网上已经有很多，很好的文章了，本菜为了能加深对so文件格式的理解，于是就写此篇文章，来加深对于so文件格式的理解。</p>
 <blockquote>
@@ -466,737 +113,322 @@
 <p>010editor看到的：</p>
 <p><img src="/images/44.png" alt=""></p>
 <p>可以看出，解析成功。</p>
-
+]]></content>
       
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-        <div class="post-tags">
-          
-            <a href="/tags/android/" rel="tag"># android</a>
-          
-        </div>
-      
-
-      
-      
-      
-
-      
-        <div class="post-nav">
-          <div class="post-nav-next post-nav-item">
+        <categories>
             
-              <a href="/2018/03/01/java/" rel="next" title="java的类加载器">
-                <i class="fa fa-chevron-left"></i> java的类加载器
-              </a>
+            <category> android </category>
             
-          </div>
-
-          <span class="post-nav-divider"></span>
-
-          <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/03/20/android/" rel="prev" title="什么是目标文件">
-                什么是目标文件 <i class="fa fa-chevron-right"></i>
-              </a>
-            
-          </div>
-        </div>
-      
-
-      
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-
-    <div class="post-spread">
-      
-    </div>
-  </div>
-
-
-          </div>
-          
-
-
-          
-  
-    <div class="comments" id="comments">
-      <div id="lv-container" data-id="city" data-uid="MTAyMC8zNDEwMC8xMDYzOA=="></div>
-    </div>
-  
-  </div>
-
-
-
-        </div>
+        </categories>
         
-          
-  
-  <div class="sidebar-toggle">
-    <div class="sidebar-toggle-line-wrap">
-      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
-      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
-      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
-    </div>
-  </div>
-
-  <aside id="sidebar" class="sidebar">
+        
+        <tags>
+            
+            <tag> android </tag>
+            
+        </tags>
+        
+    </entry>
     
-    <div class="sidebar-inner">
-
+    <entry>
+      <title><![CDATA[java的类加载器]]></title>
+      <url>/2018/03/01/java/</url>
+      <content type="html"><![CDATA[<blockquote>
+<h3 id="类加载器的概念"><a href="#类加载器的概念" class="headerlink" title="类加载器的概念"></a>类加载器的概念</h3></blockquote>
+<p>类加载器顾名思义，就是在程序运行时加载java的字节码文件的一个东西。当我们运行java程序时，编写好的源java文件(以.java为后缀的文件)被编译为java的字节码文件(以.class为后缀的文件)，当运行时需要这个类的时候，类加载器就会把需要的java字节码文件加载并且<code>newInstance()</code>生成它的对象，放到jvm虚拟机内存中，让jvm使用。</p>
+<blockquote>
+<h3 id="类加载器的分类"><a href="#类加载器的分类" class="headerlink" title="类加载器的分类"></a>类加载器的分类</h3></blockquote>
+<p>类加载器这个概念自JDK1.0时就有了，好像一开始sun公司来定义它是因为它可以来加载从网络中取到的java程序。类加载器符合树形结构，如下图：</p>
+<p><img src="/images/classloader.png" alt=""></p>
+<p>首先在这里再补充一个概念，类加载器也是类，也是用java语言编写的。好了，那就继续看一下每个类加载器的解释，BootStrap是嵌在JVM内核中的加载器，该加载器是用C++语言写的，主要负载加载JAVA_HOME/lib下的类库，启动类加载器无法被应用程序直接使用。ExtClassLoader又称之为扩展类加载器，它主要来负责加载jre/lib/ext下的类库，如果在此文件夹下有jvm所需要的类，那么此类会被ExtClassLoader来加载。AppClassLoader也是系统类加载器，也是应用程序的类加载器，他负责加载classpath目录下所有的class和jar文件。</p>
+<blockquote>
+<h3 id="类加载器的工作模式"><a href="#类加载器的工作模式" class="headerlink" title="类加载器的工作模式"></a>类加载器的工作模式</h3></blockquote>
+<p>类加载器并不是通常意义上的继承关系，而是一种双亲委派机制，我通过一张图，来讲解一下，此图为盗用姜维大神的图：</p>
+<p><img src="/images/non.png" alt=""></p>
+<p>从这张图中，可以很清楚，类加载器的工作机制，在类加载时，自定义的类加载器首先会委托给AppClassLoader，AppClassLoader再委托给ExtClassLoader，最后ExtClassLoader委托BootStrap，BootStrap先去加载，如果加载成功，类加载就结束了，不成功就会交给ExtClassLoader去加载，成功就结束，不成功就继续交给AppClassLoader去加载，成功就结束，不成功继续交给自定义的类加载器，成功就结束，不成功就会报ClassNotFoundException异常，整个类加载过程结束，这也就很好的说明了为什么类加载器的工作原理是双亲委托机制。</p>
+<blockquote>
+<h3 id="java源码中的ClassLoader运行机制"><a href="#java源码中的ClassLoader运行机制" class="headerlink" title="java源码中的ClassLoader运行机制"></a>java源码中的ClassLoader运行机制</h3></blockquote>
+<p>当我们明白java类加载器的工作原理后，我们就可以自定义ClassLoader来满足我们自己的业务需求，虽然，java提供的这三个类加载器已经能满足大多数的业务需求，但是，我们如果想提高程序的安全性那就不得不自定义classloader了，首先自定义classloader都必须要继承ClassLoader这个类。这个类有三个关键的方法，他们是loadClass(),findClass()以及defineClass()。首先我们来看看loadClass()里都做了什么。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Class&lt;?&gt; loadClass(String name) <span class="keyword">throws</span> ClassNotFoundException &#123;</span><br><span class="line">    <span class="comment">//返回loadClass(String name, boolean resolve)</span></span><br><span class="line">       <span class="keyword">return</span> loadClass(name, <span class="keyword">false</span>);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>当类加载要加载类时，他首先会执行loadClass(String name)；这个方法需要一个参数，就是被加载类的名字，这个名字是全信息名。我们继续追踪loadClass(String name, boolean resolve)方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> Class&lt;?&gt; loadClass(String name, <span class="keyword">boolean</span> resolve)</span><br><span class="line">        <span class="keyword">throws</span> ClassNotFoundException</span><br><span class="line">    &#123;</span><br><span class="line">    <span class="comment">//线程锁，防止多线程中同时加载类</span></span><br><span class="line">        <span class="keyword">synchronized</span> (getClassLoadingLock(name)) &#123;</span><br><span class="line">            <span class="comment">// 首先，检查这个类是否已经被加载了，如果是就不重复加载，否则就加载</span></span><br><span class="line">            Class&lt;?&gt; c = findLoadedClass(name);</span><br><span class="line">            <span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">long</span> t0 = System.nanoTime();</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">/**</span></span><br><span class="line"><span class="comment">                这个if判断非常明显的可以看出为什么说类加载器是双亲委托机制。他会检查这个类加载器的父</span></span><br><span class="line"><span class="comment">                类加载器是否为空如果不为空就调用父类加载器的loadclass方法，否则就执行</span></span><br><span class="line"><span class="comment">                findBootstrapClassOrNull方法，这个方法请看下面。</span></span><br><span class="line"><span class="comment">                */</span></span><br><span class="line">                    <span class="keyword">if</span> (parent != <span class="keyword">null</span>) &#123;</span><br><span class="line">                        c = parent.loadClass(name, <span class="keyword">false</span>);</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        c = findBootstrapClassOrNull(name);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">                    <span class="comment">//类没找到，抛出ClassNotFoundException</span></span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    <span class="comment">//如果父类的加载器，加载失败就会走到这里</span></span><br><span class="line">                    <span class="keyword">long</span> t1 = System.nanoTime();</span><br><span class="line">                    c = findClass(name);</span><br><span class="line"></span><br><span class="line">                    <span class="comment">// this is the defining class loader; record the stats</span></span><br><span class="line">                    sun.misc.PerfCounter.getParentDelegationTime().addTime(t1 - t0);</span><br><span class="line">                    sun.misc.PerfCounter.getFindClassTime().addElapsedTimeFrom(t1);</span><br><span class="line">                    sun.misc.PerfCounter.getFindClasses().increment();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (resolve) &#123;</span><br><span class="line">                resolveClass(c);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> c;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> Class&lt;?&gt; findBootstrapClassOrNull(String name)</span><br><span class="line">    &#123;</span><br><span class="line">    <span class="comment">//这里就是检查被加载的类名是否正确，不正确返回null</span></span><br><span class="line">        <span class="keyword">if</span> (!checkName(name)) <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    <span class="comment">//这是个native方法看不到源码，可能是用BootStrap来进行类的加载</span></span><br><span class="line">        <span class="keyword">return</span> findBootstrapClass(name);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> Class&lt;?&gt; findClass(String name) <span class="keyword">throws</span> ClassNotFoundException &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> ClassNotFoundException(name);</span><br><span class="line">    <span class="comment">//哈哈，这就是自定义ClassLoader需要复写的方法</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">这里只需要看最后的defineClass方法就可以了。从中可以看出，加载器是将类变为字节流的形式，读进来，继而进</span></span><br><span class="line"><span class="comment">行类的加载的</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> Class&lt;?&gt; defineClass(String name, <span class="keyword">byte</span>[] b, <span class="keyword">int</span> off, <span class="keyword">int</span> len,</span><br><span class="line">                                         ProtectionDomain protectionDomain)</span><br><span class="line">        <span class="keyword">throws</span> ClassFormatError</span><br><span class="line">    &#123;</span><br><span class="line">        protectionDomain = preDefineClass(name, protectionDomain);</span><br><span class="line">        String source = defineClassSourceLocation(protectionDomain);</span><br><span class="line">        Class&lt;?&gt; c = defineClass1(name, b, off, len, protectionDomain, source);</span><br><span class="line">        postDefineClass(c, protectionDomain);</span><br><span class="line">        <span class="keyword">return</span> c;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>现在清楚了一个ClassLoader中，三个关键方法的执行顺序了首先loadClass()-&gt;findClass()-&gt;defineClass();</p>
+<blockquote>
+<h3 id="自己动手定义ClassLoader"><a href="#自己动手定义ClassLoader" class="headerlink" title="自己动手定义ClassLoader"></a>自己动手定义ClassLoader</h3></blockquote>
+<p>首先咱随便写一个需要被我们自定义的类加载器加载的类；</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ClassLoaderJava.java  这是需要被类加载器加载的类，输出一句话；</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ClassLoaderJava</span>  </span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">long</span> VersionId=<span class="number">1L</span>;</span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="comment">// TODO Auto-generated method stub</span></span><br><span class="line">		<span class="keyword">return</span> <span class="string">"输出类加载器"</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后我们再自定义ClassLoader；</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//    CustomClassLoader.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CustomClassLoader</span> <span class="keyword">extends</span> <span class="title">ClassLoader</span></span>&#123;</span><br><span class="line">	<span class="keyword">private</span> String classPath;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="title">CustomClassLoader</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="comment">// TODO Auto-generated constructor stub</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="title">CustomClassLoader</span><span class="params">(String classPath)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">this</span>.classPath=classPath;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line"></span><br><span class="line">	<span class="meta">@SuppressWarnings</span>(<span class="string">"deprecation"</span>)</span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="keyword">protected</span> Class&lt;?&gt; findClass(String name) <span class="keyword">throws</span> ClassNotFoundException &#123;</span><br><span class="line">	<span class="comment">// TODO Auto-generated method stub</span></span><br><span class="line">		<span class="keyword">int</span> bytes=-<span class="number">1</span>;</span><br><span class="line">		String classPathFile=classPath+<span class="string">"/"</span>+name+<span class="string">".class"</span>;</span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			FileInputStream fileInputStream=<span class="keyword">new</span> FileInputStream(classPathFile);</span><br><span class="line">			ByteArrayOutputStream byteArrayOutputStream=<span class="keyword">new</span> ByteArrayOutputStream();</span><br><span class="line">			<span class="keyword">while</span> ((bytes=fileInputStream.read())!=-<span class="number">1</span>) &#123;</span><br><span class="line">				byteArrayOutputStream.write(bytes);</span><br><span class="line">			&#125;</span><br><span class="line">			byteArrayOutputStream.flush();</span><br><span class="line">			byteArrayOutputStream.close();</span><br><span class="line">			fileInputStream.close();</span><br><span class="line">			<span class="keyword">byte</span>[] classByte=byteArrayOutputStream.toByteArray();</span><br><span class="line">			</span><br><span class="line">			<span class="keyword">return</span> defineClass(classByte, <span class="number">0</span>, classByte.length);</span><br><span class="line">		&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">			<span class="comment">// <span class="doctag">TODO:</span> handle exception</span></span><br><span class="line">			e.printStackTrace();</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">super</span>.findClass(name);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后我们需要一个测试类；</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">		<span class="comment">// TODO Auto-generated method stub</span></span><br><span class="line">        <span class="keyword">try</span> &#123;  </span><br><span class="line">            Class class1 = </span><br><span class="line">            <span class="keyword">new</span> CustomClassLoader(<span class="string">"bin\\org\\hahah\\demo"</span>).loadClass(<span class="string">"ClassLoaderJava"</span>);  </span><br><span class="line">            Object object = class1.newInstance();</span><br><span class="line">            System.out.println(<span class="string">"这是什么ClassLoader:"</span>+object.getClass().getClassLoader().getClass().getName());  </span><br><span class="line">            System.out.println(object);  </span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e1) &#123;  </span><br><span class="line">            e1.printStackTrace();  </span><br><span class="line">        &#125;  </span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后我们运行，Console所打印的信息，正是我们希望看到的结果；</p>
+<p><img src="/images/result.png" alt=""></p>
+<p>end！</p>
+]]></content>
       
-
-      
-        <ul class="sidebar-nav motion-element">
-          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            文章目录
-          </li>
-          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            站点概览
-          </li>
-        </ul>
-      
-
-      <section class="site-overview-wrap sidebar-panel">
-        <div class="site-overview">
-          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <categories>
             
-              <img class="site-author-image" itemprop="image"
-                src="/images/head.jpg"
-                alt="wula meng" />
+            <category> java </category>
             
-              <p class="site-author-name" itemprop="name">wula meng</p>
-              <p class="site-description motion-element" itemprop="description">吾日三省吾身</p>
-          </div>
-
-          <nav class="site-state motion-element">
-
-            
-              <div class="site-state-item site-state-posts">
-              
-                <a href="/archives">
-              
-                  <span class="site-state-item-count">8</span>
-                  <span class="site-state-item-name">日志</span>
-                </a>
-              </div>
-            
-
-            
-              
-              
-              <div class="site-state-item site-state-categories">
-                <a href="/categories/index.html">
-                  <span class="site-state-item-count">5</span>
-                  <span class="site-state-item-name">分类</span>
-                </a>
-              </div>
-            
-
-            
-              
-              
-              <div class="site-state-item site-state-tags">
-                <a href="/tags/index.html">
-                  <span class="site-state-item-count">6</span>
-                  <span class="site-state-item-name">标签</span>
-                </a>
-              </div>
-            
-
-          </nav>
-
-          
-
-          <div class="links-of-author motion-element">
-            
-          </div>
-
-          
-          
-
-          
-          
-
-          
-
-        </div>
-      </section>
-
-      
-      <!--noindex-->
-        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
-          <div class="post-toc">
-
-            
-              
-            
-
-            
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text"><a href="#&#x524D;&#x8A00;" class="headerlink" title="&#x524D;&#x8A00;"></a>&#x524D;&#x8A00;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分析"><span class="nav-number">2.</span> <span class="nav-text"><a href="#&#x5206;&#x6790;" class="headerlink" title="&#x5206;&#x6790;"></a>&#x5206;&#x6790;</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#elf头部信息"><span class="nav-number">2.1.</span> <span class="nav-text"><a href="#elf&#x5934;&#x90E8;&#x4FE1;&#x606F;" class="headerlink" title="elf&#x5934;&#x90E8;&#x4FE1;&#x606F;"></a>elf&#x5934;&#x90E8;&#x4FE1;&#x606F;</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#e-ident：从字面意思来理解，elf文件的定义，他占用了16个字节。"><span class="nav-number">2.1.1.</span> <span class="nav-text"><a href="#e-ident&#xFF1A;&#x4ECE;&#x5B57;&#x9762;&#x610F;&#x601D;&#x6765;&#x7406;&#x89E3;&#xFF0C;elf&#x6587;&#x4EF6;&#x7684;&#x5B9A;&#x4E49;&#xFF0C;&#x4ED6;&#x5360;&#x7528;&#x4E86;16&#x4E2A;&#x5B57;&#x8282;&#x3002;" class="headerlink" title="e_ident&#xFF1A;&#x4ECE;&#x5B57;&#x9762;&#x610F;&#x601D;&#x6765;&#x7406;&#x89E3;&#xFF0C;elf&#x6587;&#x4EF6;&#x7684;&#x5B9A;&#x4E49;&#xFF0C;&#x4ED6;&#x5360;&#x7528;&#x4E86;16&#x4E2A;&#x5B57;&#x8282;&#x3002;"></a><code>e_ident</code>&#xFF1A;&#x4ECE;&#x5B57;&#x9762;&#x610F;&#x601D;&#x6765;&#x7406;&#x89E3;&#xFF0C;elf&#x6587;&#x4EF6;&#x7684;&#x5B9A;&#x4E49;&#xFF0C;&#x4ED6;&#x5360;&#x7528;&#x4E86;16&#x4E2A;&#x5B57;&#x8282;&#x3002;</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#e-type：表示elf文件类型。大小为2个字节"><span class="nav-number">2.1.2.</span> <span class="nav-text"><a href="#e-type&#xFF1A;&#x8868;&#x793A;elf&#x6587;&#x4EF6;&#x7C7B;&#x578B;&#x3002;&#x5927;&#x5C0F;&#x4E3A;2&#x4E2A;&#x5B57;&#x8282;" class="headerlink" title="e_type&#xFF1A;&#x8868;&#x793A;elf&#x6587;&#x4EF6;&#x7C7B;&#x578B;&#x3002;&#x5927;&#x5C0F;&#x4E3A;2&#x4E2A;&#x5B57;&#x8282;"></a><code>e_type</code>&#xFF1A;&#x8868;&#x793A;elf&#x6587;&#x4EF6;&#x7C7B;&#x578B;&#x3002;&#x5927;&#x5C0F;&#x4E3A;2&#x4E2A;&#x5B57;&#x8282;</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#e-machine：表示目标文件体系结构。大小为2字节"><span class="nav-number">2.1.3.</span> <span class="nav-text"><a href="#e-machine&#xFF1A;&#x8868;&#x793A;&#x76EE;&#x6807;&#x6587;&#x4EF6;&#x4F53;&#x7CFB;&#x7ED3;&#x6784;&#x3002;&#x5927;&#x5C0F;&#x4E3A;2&#x5B57;&#x8282;" class="headerlink" title="e_machine&#xFF1A;&#x8868;&#x793A;&#x76EE;&#x6807;&#x6587;&#x4EF6;&#x4F53;&#x7CFB;&#x7ED3;&#x6784;&#x3002;&#x5927;&#x5C0F;&#x4E3A;2&#x5B57;&#x8282;"></a><code>e_machine</code>&#xFF1A;&#x8868;&#x793A;&#x76EE;&#x6807;&#x6587;&#x4EF6;&#x4F53;&#x7CFB;&#x7ED3;&#x6784;&#x3002;&#x5927;&#x5C0F;&#x4E3A;2&#x5B57;&#x8282;</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#e-version：elf文件的版本，大小为4个字节。"><span class="nav-number">2.1.4.</span> <span class="nav-text"><a href="#e-version&#xFF1A;elf&#x6587;&#x4EF6;&#x7684;&#x7248;&#x672C;&#xFF0C;&#x5927;&#x5C0F;&#x4E3A;4&#x4E2A;&#x5B57;&#x8282;&#x3002;" class="headerlink" title="e_version&#xFF1A;elf&#x6587;&#x4EF6;&#x7684;&#x7248;&#x672C;&#xFF0C;&#x5927;&#x5C0F;&#x4E3A;4&#x4E2A;&#x5B57;&#x8282;&#x3002;"></a><code>e_version</code>&#xFF1A;elf&#x6587;&#x4EF6;&#x7684;&#x7248;&#x672C;&#xFF0C;&#x5927;&#x5C0F;&#x4E3A;4&#x4E2A;&#x5B57;&#x8282;&#x3002;</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#e-entry：elf文件程序入口的虚拟地址，如果没有可以为0，大小为4字节。"><span class="nav-number">2.1.5.</span> <span class="nav-text"><a href="#e-entry&#xFF1A;elf&#x6587;&#x4EF6;&#x7A0B;&#x5E8F;&#x5165;&#x53E3;&#x7684;&#x865A;&#x62DF;&#x5730;&#x5740;&#xFF0C;&#x5982;&#x679C;&#x6CA1;&#x6709;&#x53EF;&#x4EE5;&#x4E3A;0&#xFF0C;&#x5927;&#x5C0F;&#x4E3A;4&#x5B57;&#x8282;&#x3002;" class="headerlink" title="e_entry&#xFF1A;elf&#x6587;&#x4EF6;&#x7A0B;&#x5E8F;&#x5165;&#x53E3;&#x7684;&#x865A;&#x62DF;&#x5730;&#x5740;&#xFF0C;&#x5982;&#x679C;&#x6CA1;&#x6709;&#x53EF;&#x4EE5;&#x4E3A;0&#xFF0C;&#x5927;&#x5C0F;&#x4E3A;4&#x5B57;&#x8282;&#x3002;"></a><code>e_entry</code>&#xFF1A;elf&#x6587;&#x4EF6;&#x7A0B;&#x5E8F;&#x5165;&#x53E3;&#x7684;&#x865A;&#x62DF;&#x5730;&#x5740;&#xFF0C;&#x5982;&#x679C;&#x6CA1;&#x6709;&#x53EF;&#x4EE5;&#x4E3A;0&#xFF0C;&#x5927;&#x5C0F;&#x4E3A;4&#x5B57;&#x8282;&#x3002;</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#e-phoff：elf文件程序头部表格的偏移量-大小按字节计算-，就像在连接视图中展示的那样，程序头部表格是可以没有的，那么他的值为0，大小为4个字节。其实可以这么理解，如果程序头部表格存在的情况下，这个偏移值就是elf头的大小。也就是10进制的52，elf头也正是占用了52个字节。"><span class="nav-number">2.1.6.</span> <span class="nav-text"><a href="#e-phoff&#xFF1A;elf&#x6587;&#x4EF6;&#x7A0B;&#x5E8F;&#x5934;&#x90E8;&#x8868;&#x683C;&#x7684;&#x504F;&#x79FB;&#x91CF;-&#x5927;&#x5C0F;&#x6309;&#x5B57;&#x8282;&#x8BA1;&#x7B97;-&#xFF0C;&#x5C31;&#x50CF;&#x5728;&#x8FDE;&#x63A5;&#x89C6;&#x56FE;&#x4E2D;&#x5C55;&#x793A;&#x7684;&#x90A3;&#x6837;&#xFF0C;&#x7A0B;&#x5E8F;&#x5934;&#x90E8;&#x8868;&#x683C;&#x662F;&#x53EF;&#x4EE5;&#x6CA1;&#x6709;&#x7684;&#xFF0C;&#x90A3;&#x4E48;&#x4ED6;&#x7684;&#x503C;&#x4E3A;0&#xFF0C;&#x5927;&#x5C0F;&#x4E3A;4&#x4E2A;&#x5B57;&#x8282;&#x3002;&#x5176;&#x5B9E;&#x53EF;&#x4EE5;&#x8FD9;&#x4E48;&#x7406;&#x89E3;&#xFF0C;&#x5982;&#x679C;&#x7A0B;&#x5E8F;&#x5934;&#x90E8;&#x8868;&#x683C;&#x5B58;&#x5728;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x8FD9;&#x4E2A;&#x504F;&#x79FB;&#x503C;&#x5C31;&#x662F;elf&#x5934;&#x7684;&#x5927;&#x5C0F;&#x3002;&#x4E5F;&#x5C31;&#x662F;10&#x8FDB;&#x5236;&#x7684;52&#xFF0C;elf&#x5934;&#x4E5F;&#x6B63;&#x662F;&#x5360;&#x7528;&#x4E86;52&#x4E2A;&#x5B57;&#x8282;&#x3002;" class="headerlink" title="e_phoff&#xFF1A;elf&#x6587;&#x4EF6;&#x7A0B;&#x5E8F;&#x5934;&#x90E8;&#x8868;&#x683C;&#x7684;&#x504F;&#x79FB;&#x91CF;(&#x5927;&#x5C0F;&#x6309;&#x5B57;&#x8282;&#x8BA1;&#x7B97;)&#xFF0C;&#x5C31;&#x50CF;&#x5728;&#x8FDE;&#x63A5;&#x89C6;&#x56FE;&#x4E2D;&#x5C55;&#x793A;&#x7684;&#x90A3;&#x6837;&#xFF0C;&#x7A0B;&#x5E8F;&#x5934;&#x90E8;&#x8868;&#x683C;&#x662F;&#x53EF;&#x4EE5;&#x6CA1;&#x6709;&#x7684;&#xFF0C;&#x90A3;&#x4E48;&#x4ED6;&#x7684;&#x503C;&#x4E3A;0&#xFF0C;&#x5927;&#x5C0F;&#x4E3A;4&#x4E2A;&#x5B57;&#x8282;&#x3002;&#x5176;&#x5B9E;&#x53EF;&#x4EE5;&#x8FD9;&#x4E48;&#x7406;&#x89E3;&#xFF0C;&#x5982;&#x679C;&#x7A0B;&#x5E8F;&#x5934;&#x90E8;&#x8868;&#x683C;&#x5B58;&#x5728;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x8FD9;&#x4E2A;&#x504F;&#x79FB;&#x503C;&#x5C31;&#x662F;elf&#x5934;&#x7684;&#x5927;&#x5C0F;&#x3002;&#x4E5F;&#x5C31;&#x662F;10&#x8FDB;&#x5236;&#x7684;52&#xFF0C;elf&#x5934;&#x4E5F;&#x6B63;&#x662F;&#x5360;&#x7528;&#x4E86;52&#x4E2A;&#x5B57;&#x8282;&#x3002;"></a><code>e_phoff</code>&#xFF1A;elf&#x6587;&#x4EF6;&#x7A0B;&#x5E8F;&#x5934;&#x90E8;&#x8868;&#x683C;&#x7684;&#x504F;&#x79FB;&#x91CF;(&#x5927;&#x5C0F;&#x6309;&#x5B57;&#x8282;&#x8BA1;&#x7B97;)&#xFF0C;&#x5C31;&#x50CF;&#x5728;&#x8FDE;&#x63A5;&#x89C6;&#x56FE;&#x4E2D;&#x5C55;&#x793A;&#x7684;&#x90A3;&#x6837;&#xFF0C;&#x7A0B;&#x5E8F;&#x5934;&#x90E8;&#x8868;&#x683C;&#x662F;&#x53EF;&#x4EE5;&#x6CA1;&#x6709;&#x7684;&#xFF0C;&#x90A3;&#x4E48;&#x4ED6;&#x7684;&#x503C;&#x4E3A;0&#xFF0C;&#x5927;&#x5C0F;&#x4E3A;4&#x4E2A;&#x5B57;&#x8282;&#x3002;&#x5176;&#x5B9E;&#x53EF;&#x4EE5;&#x8FD9;&#x4E48;&#x7406;&#x89E3;&#xFF0C;&#x5982;&#x679C;&#x7A0B;&#x5E8F;&#x5934;&#x90E8;&#x8868;&#x683C;&#x5B58;&#x5728;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x8FD9;&#x4E2A;&#x504F;&#x79FB;&#x503C;&#x5C31;&#x662F;elf&#x5934;&#x7684;&#x5927;&#x5C0F;&#x3002;&#x4E5F;&#x5C31;&#x662F;10&#x8FDB;&#x5236;&#x7684;52&#xFF0C;elf&#x5934;&#x4E5F;&#x6B63;&#x662F;&#x5360;&#x7528;&#x4E86;52&#x4E2A;&#x5B57;&#x8282;&#x3002;</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#e-shoff：elf文件节区头部表格的偏移量-大小按字节计算-，就像在执行视图中展示的那样，节区头部表格是可以没有的，他的值为0，大小为4个字节。"><span class="nav-number">2.1.7.</span> <span class="nav-text"><a href="#e-shoff&#xFF1A;elf&#x6587;&#x4EF6;&#x8282;&#x533A;&#x5934;&#x90E8;&#x8868;&#x683C;&#x7684;&#x504F;&#x79FB;&#x91CF;-&#x5927;&#x5C0F;&#x6309;&#x5B57;&#x8282;&#x8BA1;&#x7B97;-&#xFF0C;&#x5C31;&#x50CF;&#x5728;&#x6267;&#x884C;&#x89C6;&#x56FE;&#x4E2D;&#x5C55;&#x793A;&#x7684;&#x90A3;&#x6837;&#xFF0C;&#x8282;&#x533A;&#x5934;&#x90E8;&#x8868;&#x683C;&#x662F;&#x53EF;&#x4EE5;&#x6CA1;&#x6709;&#x7684;&#xFF0C;&#x4ED6;&#x7684;&#x503C;&#x4E3A;0&#xFF0C;&#x5927;&#x5C0F;&#x4E3A;4&#x4E2A;&#x5B57;&#x8282;&#x3002;" class="headerlink" title="e_shoff&#xFF1A;elf&#x6587;&#x4EF6;&#x8282;&#x533A;&#x5934;&#x90E8;&#x8868;&#x683C;&#x7684;&#x504F;&#x79FB;&#x91CF;(&#x5927;&#x5C0F;&#x6309;&#x5B57;&#x8282;&#x8BA1;&#x7B97;)&#xFF0C;&#x5C31;&#x50CF;&#x5728;&#x6267;&#x884C;&#x89C6;&#x56FE;&#x4E2D;&#x5C55;&#x793A;&#x7684;&#x90A3;&#x6837;&#xFF0C;&#x8282;&#x533A;&#x5934;&#x90E8;&#x8868;&#x683C;&#x662F;&#x53EF;&#x4EE5;&#x6CA1;&#x6709;&#x7684;&#xFF0C;&#x4ED6;&#x7684;&#x503C;&#x4E3A;0&#xFF0C;&#x5927;&#x5C0F;&#x4E3A;4&#x4E2A;&#x5B57;&#x8282;&#x3002;"></a><code>e_shoff</code>&#xFF1A;elf&#x6587;&#x4EF6;&#x8282;&#x533A;&#x5934;&#x90E8;&#x8868;&#x683C;&#x7684;&#x504F;&#x79FB;&#x91CF;(&#x5927;&#x5C0F;&#x6309;&#x5B57;&#x8282;&#x8BA1;&#x7B97;)&#xFF0C;&#x5C31;&#x50CF;&#x5728;&#x6267;&#x884C;&#x89C6;&#x56FE;&#x4E2D;&#x5C55;&#x793A;&#x7684;&#x90A3;&#x6837;&#xFF0C;&#x8282;&#x533A;&#x5934;&#x90E8;&#x8868;&#x683C;&#x662F;&#x53EF;&#x4EE5;&#x6CA1;&#x6709;&#x7684;&#xFF0C;&#x4ED6;&#x7684;&#x503C;&#x4E3A;0&#xFF0C;&#x5927;&#x5C0F;&#x4E3A;4&#x4E2A;&#x5B57;&#x8282;&#x3002;</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#e-flags：elf文件特定于处理器的标志，大小4字节。"><span class="nav-number">2.1.8.</span> <span class="nav-text"><a href="#e-flags&#xFF1A;elf&#x6587;&#x4EF6;&#x7279;&#x5B9A;&#x4E8E;&#x5904;&#x7406;&#x5668;&#x7684;&#x6807;&#x5FD7;&#xFF0C;&#x5927;&#x5C0F;4&#x5B57;&#x8282;&#x3002;" class="headerlink" title="e_flags&#xFF1A;elf&#x6587;&#x4EF6;&#x7279;&#x5B9A;&#x4E8E;&#x5904;&#x7406;&#x5668;&#x7684;&#x6807;&#x5FD7;&#xFF0C;&#x5927;&#x5C0F;4&#x5B57;&#x8282;&#x3002;"></a><code>e_flags</code>&#xFF1A;elf&#x6587;&#x4EF6;&#x7279;&#x5B9A;&#x4E8E;&#x5904;&#x7406;&#x5668;&#x7684;&#x6807;&#x5FD7;&#xFF0C;&#x5927;&#x5C0F;4&#x5B57;&#x8282;&#x3002;</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#e-ehsize：elf文件头部的大小，字节计算。大小为2字节。"><span class="nav-number">2.1.9.</span> <span class="nav-text"><a href="#e-ehsize&#xFF1A;elf&#x6587;&#x4EF6;&#x5934;&#x90E8;&#x7684;&#x5927;&#x5C0F;&#xFF0C;&#x5B57;&#x8282;&#x8BA1;&#x7B97;&#x3002;&#x5927;&#x5C0F;&#x4E3A;2&#x5B57;&#x8282;&#x3002;" class="headerlink" title="e_ehsize&#xFF1A;elf&#x6587;&#x4EF6;&#x5934;&#x90E8;&#x7684;&#x5927;&#x5C0F;&#xFF0C;&#x5B57;&#x8282;&#x8BA1;&#x7B97;&#x3002;&#x5927;&#x5C0F;&#x4E3A;2&#x5B57;&#x8282;&#x3002;"></a><code>e_ehsize</code>&#xFF1A;elf&#x6587;&#x4EF6;&#x5934;&#x90E8;&#x7684;&#x5927;&#x5C0F;&#xFF0C;&#x5B57;&#x8282;&#x8BA1;&#x7B97;&#x3002;&#x5927;&#x5C0F;&#x4E3A;2&#x5B57;&#x8282;&#x3002;</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#e-phentsize：elf文件程序头部表格的表项大小（按字节计算），可为0，大小2字节。"><span class="nav-number">2.1.10.</span> <span class="nav-text"><a href="#e-phentsize&#xFF1A;elf&#x6587;&#x4EF6;&#x7A0B;&#x5E8F;&#x5934;&#x90E8;&#x8868;&#x683C;&#x7684;&#x8868;&#x9879;&#x5927;&#x5C0F;&#xFF08;&#x6309;&#x5B57;&#x8282;&#x8BA1;&#x7B97;&#xFF09;&#xFF0C;&#x53EF;&#x4E3A;0&#xFF0C;&#x5927;&#x5C0F;2&#x5B57;&#x8282;&#x3002;" class="headerlink" title="e_phentsize&#xFF1A;elf&#x6587;&#x4EF6;&#x7A0B;&#x5E8F;&#x5934;&#x90E8;&#x8868;&#x683C;&#x7684;&#x8868;&#x9879;&#x5927;&#x5C0F;&#xFF08;&#x6309;&#x5B57;&#x8282;&#x8BA1;&#x7B97;&#xFF09;&#xFF0C;&#x53EF;&#x4E3A;0&#xFF0C;&#x5927;&#x5C0F;2&#x5B57;&#x8282;&#x3002;"></a><code>e_phentsize</code>&#xFF1A;elf&#x6587;&#x4EF6;&#x7A0B;&#x5E8F;&#x5934;&#x90E8;&#x8868;&#x683C;&#x7684;&#x8868;&#x9879;&#x5927;&#x5C0F;&#xFF08;&#x6309;&#x5B57;&#x8282;&#x8BA1;&#x7B97;&#xFF09;&#xFF0C;&#x53EF;&#x4E3A;0&#xFF0C;&#x5927;&#x5C0F;2&#x5B57;&#x8282;&#x3002;</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#e-phnum：elf文件程序头部表格的表项数目，可以为-0。-他和上面这个成对出现，要有都有，反之亦然。"><span class="nav-number">2.1.11.</span> <span class="nav-text"><a href="#e-phnum&#xFF1A;elf&#x6587;&#x4EF6;&#x7A0B;&#x5E8F;&#x5934;&#x90E8;&#x8868;&#x683C;&#x7684;&#x8868;&#x9879;&#x6570;&#x76EE;&#xFF0C;&#x53EF;&#x4EE5;&#x4E3A;-0&#x3002;-&#x4ED6;&#x548C;&#x4E0A;&#x9762;&#x8FD9;&#x4E2A;&#x6210;&#x5BF9;&#x51FA;&#x73B0;&#xFF0C;&#x8981;&#x6709;&#x90FD;&#x6709;&#xFF0C;&#x53CD;&#x4E4B;&#x4EA6;&#x7136;&#x3002;" class="headerlink" title="e_phnum&#xFF1A;elf&#x6587;&#x4EF6;&#x7A0B;&#x5E8F;&#x5934;&#x90E8;&#x8868;&#x683C;&#x7684;&#x8868;&#x9879;&#x6570;&#x76EE;&#xFF0C;&#x53EF;&#x4EE5;&#x4E3A; 0&#x3002; &#x4ED6;&#x548C;&#x4E0A;&#x9762;&#x8FD9;&#x4E2A;&#x6210;&#x5BF9;&#x51FA;&#x73B0;&#xFF0C;&#x8981;&#x6709;&#x90FD;&#x6709;&#xFF0C;&#x53CD;&#x4E4B;&#x4EA6;&#x7136;&#x3002;"></a><code>e_phnum</code>&#xFF1A;elf&#x6587;&#x4EF6;&#x7A0B;&#x5E8F;&#x5934;&#x90E8;&#x8868;&#x683C;&#x7684;&#x8868;&#x9879;&#x6570;&#x76EE;&#xFF0C;&#x53EF;&#x4EE5;&#x4E3A; 0&#x3002; &#x4ED6;&#x548C;&#x4E0A;&#x9762;&#x8FD9;&#x4E2A;&#x6210;&#x5BF9;&#x51FA;&#x73B0;&#xFF0C;&#x8981;&#x6709;&#x90FD;&#x6709;&#xFF0C;&#x53CD;&#x4E4B;&#x4EA6;&#x7136;&#x3002;</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#e-shentsize：elf节区头部表格的表项大小（按字节计算），可为0，大小2字节。"><span class="nav-number">2.1.12.</span> <span class="nav-text"><a href="#e-shentsize&#xFF1A;elf&#x8282;&#x533A;&#x5934;&#x90E8;&#x8868;&#x683C;&#x7684;&#x8868;&#x9879;&#x5927;&#x5C0F;&#xFF08;&#x6309;&#x5B57;&#x8282;&#x8BA1;&#x7B97;&#xFF09;&#xFF0C;&#x53EF;&#x4E3A;0&#xFF0C;&#x5927;&#x5C0F;2&#x5B57;&#x8282;&#x3002;" class="headerlink" title="e_shentsize&#xFF1A;elf&#x8282;&#x533A;&#x5934;&#x90E8;&#x8868;&#x683C;&#x7684;&#x8868;&#x9879;&#x5927;&#x5C0F;&#xFF08;&#x6309;&#x5B57;&#x8282;&#x8BA1;&#x7B97;&#xFF09;&#xFF0C;&#x53EF;&#x4E3A;0&#xFF0C;&#x5927;&#x5C0F;2&#x5B57;&#x8282;&#x3002;"></a><code>e_shentsize</code>&#xFF1A;elf&#x8282;&#x533A;&#x5934;&#x90E8;&#x8868;&#x683C;&#x7684;&#x8868;&#x9879;&#x5927;&#x5C0F;&#xFF08;&#x6309;&#x5B57;&#x8282;&#x8BA1;&#x7B97;&#xFF09;&#xFF0C;&#x53EF;&#x4E3A;0&#xFF0C;&#x5927;&#x5C0F;2&#x5B57;&#x8282;&#x3002;</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#e-shnum：elf文件节区头部表格数目，可为0，大小2字节。"><span class="nav-number">2.1.13.</span> <span class="nav-text"><a href="#e-shnum&#xFF1A;elf&#x6587;&#x4EF6;&#x8282;&#x533A;&#x5934;&#x90E8;&#x8868;&#x683C;&#x6570;&#x76EE;&#xFF0C;&#x53EF;&#x4E3A;0&#xFF0C;&#x5927;&#x5C0F;2&#x5B57;&#x8282;&#x3002;" class="headerlink" title="e_shnum&#xFF1A;elf&#x6587;&#x4EF6;&#x8282;&#x533A;&#x5934;&#x90E8;&#x8868;&#x683C;&#x6570;&#x76EE;&#xFF0C;&#x53EF;&#x4E3A;0&#xFF0C;&#x5927;&#x5C0F;2&#x5B57;&#x8282;&#x3002;"></a><code>e_shnum</code>&#xFF1A;elf&#x6587;&#x4EF6;&#x8282;&#x533A;&#x5934;&#x90E8;&#x8868;&#x683C;&#x6570;&#x76EE;&#xFF0C;&#x53EF;&#x4E3A;0&#xFF0C;&#x5927;&#x5C0F;2&#x5B57;&#x8282;&#x3002;</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#e-shstrndx：elf文件节区头部表格中与节区名称字符串表相关的表项的索引。如果文件没有节区名称字符串表，此参数可以为-SHN-UNDEF。大小2字节。"><span class="nav-number">2.1.14.</span> <span class="nav-text"><a href="#e-shstrndx&#xFF1A;elf&#x6587;&#x4EF6;&#x8282;&#x533A;&#x5934;&#x90E8;&#x8868;&#x683C;&#x4E2D;&#x4E0E;&#x8282;&#x533A;&#x540D;&#x79F0;&#x5B57;&#x7B26;&#x4E32;&#x8868;&#x76F8;&#x5173;&#x7684;&#x8868;&#x9879;&#x7684;&#x7D22;&#x5F15;&#x3002;&#x5982;&#x679C;&#x6587;&#x4EF6;&#x6CA1;&#x6709;&#x8282;&#x533A;&#x540D;&#x79F0;&#x5B57;&#x7B26;&#x4E32;&#x8868;&#xFF0C;&#x6B64;&#x53C2;&#x6570;&#x53EF;&#x4EE5;&#x4E3A;-SHN-UNDEF&#x3002;&#x5927;&#x5C0F;2&#x5B57;&#x8282;&#x3002;" class="headerlink" title="e_shstrndx&#xFF1A;elf&#x6587;&#x4EF6;&#x8282;&#x533A;&#x5934;&#x90E8;&#x8868;&#x683C;&#x4E2D;&#x4E0E;&#x8282;&#x533A;&#x540D;&#x79F0;&#x5B57;&#x7B26;&#x4E32;&#x8868;&#x76F8;&#x5173;&#x7684;&#x8868;&#x9879;&#x7684;&#x7D22;&#x5F15;&#x3002;&#x5982;&#x679C;&#x6587;&#x4EF6;&#x6CA1;&#x6709;&#x8282;&#x533A;&#x540D;&#x79F0;&#x5B57;&#x7B26;&#x4E32;&#x8868;&#xFF0C;&#x6B64;&#x53C2;&#x6570;&#x53EF;&#x4EE5;&#x4E3A; SHN_UNDEF&#x3002;&#x5927;&#x5C0F;2&#x5B57;&#x8282;&#x3002;"></a><code>e_shstrndx</code>&#xFF1A;elf&#x6587;&#x4EF6;&#x8282;&#x533A;&#x5934;&#x90E8;&#x8868;&#x683C;&#x4E2D;&#x4E0E;&#x8282;&#x533A;&#x540D;&#x79F0;&#x5B57;&#x7B26;&#x4E32;&#x8868;&#x76F8;&#x5173;&#x7684;&#x8868;&#x9879;&#x7684;&#x7D22;&#x5F15;&#x3002;&#x5982;&#x679C;&#x6587;&#x4EF6;&#x6CA1;&#x6709;&#x8282;&#x533A;&#x540D;&#x79F0;&#x5B57;&#x7B26;&#x4E32;&#x8868;&#xFF0C;&#x6B64;&#x53C2;&#x6570;&#x53EF;&#x4EE5;&#x4E3A; SHN_UNDEF&#x3002;&#x5927;&#x5C0F;2&#x5B57;&#x8282;&#x3002;</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#练习"><span class="nav-number">3.</span> <span class="nav-text"><a href="#&#x7EC3;&#x4E60;" class="headerlink" title="&#x7EC3;&#x4E60;"></a>&#x7EC3;&#x4E60;</span></a></li></ol></div>
-            
-
-          </div>
-        </section>
-      <!--/noindex-->
-      
-
-      
-        <div class="back-to-top">
-          <i class="fa fa-arrow-up"></i>
-          
-            <span id="scrollpercent"><span>0</span>%</span>
-          
-        </div>
-      
-
-    </div>
-  </aside>
-
-
+        </categories>
         
-      </div>
-    </main>
-
-    <footer id="footer" class="footer">
-      <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
-  <span class="with-love">
-    <i class="fa fa-user"></i>
-  </span>
-  <span class="author" itemprop="copyrightHolder">wula meng</span>
-
-  
-</div>
-
-
-
-
-
-
-
-
-
         
-
-
-
-
-
-
-
+        <tags>
+            
+            <tag> java </tag>
+            
+        </tags>
         
-      </div>
-    </footer>
-
+    </entry>
     
-
-  </div>
-  
-   <canvas class="fireworks" style="position: fixed;left: 0;top: 0;z-index: 1; pointer-events: none;" ></canvas> 
-   <script type="text/javascript" src="//cdn.bootcss.com/animejs/2.2.0/anime.min.js"></script> 
-   <script type="text/javascript" src="/js/src/fireworks.js"></script>
-
-
-  
-
-<script type="text/javascript">
-  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
-    window.Promise = null;
-  }
-</script>
-
-
-
-
-
-
-
-
-
-  
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
-  
-  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
-
-  
-  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
-
-  
-  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
-
-  
-  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
-
-  
-  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
-
-  
-  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
-
-  
-  <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
-
-
-  
-
-
-  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
-
-  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
-
-
-
-  
-  
-
-
-  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
-
-  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
-
-
-
-  
-  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
-<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
-
-
-
-  
-
-
-  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
-
-
-
-  
-
-
-  
-
-
-
-
-	
-
-
-
-
-
-  
-
-
-
-
-
-  
-    <script type="text/javascript">
-      (function(d, s) {
-        var j, e = d.getElementsByTagName(s)[0];
-        if (typeof LivereTower === 'function') { return; }
-        j = d.createElement(s);
-        j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
-        j.async = true;
-        e.parentNode.insertBefore(j, e);
-      })(document, 'script');
-    </script>
-  
-
-
-
-
-
-
-
-
-
-  
-
-  <script type="text/javascript">
-    // Popup Window;
-    var isfetched = false;
-    var isXml = true;
-    // Search DB path;
-    var search_path = "search.xml";
-    if (search_path.length === 0) {
-      search_path = "search.xml";
-    } else if (/json$/i.test(search_path)) {
-      isXml = false;
-    }
-    var path = "/" + search_path;
-    // monitor main search box;
-
-    var onPopupClose = function (e) {
-      $('.popup').hide();
-      $('#local-search-input').val('');
-      $('.search-result-list').remove();
-      $('#no-result').remove();
-      $(".local-search-pop-overlay").remove();
-      $('body').css('overflow', '');
-    }
-
-    function proceedsearch() {
-      $("body")
-        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
-        .css('overflow', 'hidden');
-      $('.search-popup-overlay').click(onPopupClose);
-      $('.popup').toggle();
-      var $localSearchInput = $('#local-search-input');
-      $localSearchInput.attr("autocapitalize", "none");
-      $localSearchInput.attr("autocorrect", "off");
-      $localSearchInput.focus();
-    }
-
-    // search function;
-    var searchFunc = function(path, search_id, content_id) {
-      'use strict';
-
-      // start loading animation
-      $("body")
-        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
-          '<div id="search-loading-icon">' +
-          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
-          '</div>' +
-          '</div>')
-        .css('overflow', 'hidden');
-      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
-
-      $.ajax({
-        url: path,
-        dataType: isXml ? "xml" : "json",
-        async: true,
-        success: function(res) {
-          // get the contents from search data
-          isfetched = true;
-          $('.popup').detach().appendTo('.header-inner');
-          var datas = isXml ? $("entry", res).map(function() {
-            return {
-              title: $("title", this).text(),
-              content: $("content",this).text(),
-              url: $("url" , this).text()
-            };
-          }).get() : res;
-          var input = document.getElementById(search_id);
-          var resultContent = document.getElementById(content_id);
-          var inputEventFunction = function() {
-            var searchText = input.value.trim().toLowerCase();
-            var keywords = searchText.split(/[\s\-]+/);
-            if (keywords.length > 1) {
-              keywords.push(searchText);
-            }
-            var resultItems = [];
-            if (searchText.length > 0) {
-              // perform local searching
-              datas.forEach(function(data) {
-                var isMatch = false;
-                var hitCount = 0;
-                var searchTextCount = 0;
-                var title = data.title.trim();
-                var titleInLowerCase = title.toLowerCase();
-                var content = data.content.trim().replace(/<[^>]+>/g,"");
-                var contentInLowerCase = content.toLowerCase();
-                var articleUrl = decodeURIComponent(data.url);
-                var indexOfTitle = [];
-                var indexOfContent = [];
-                // only match articles with not empty titles
-                if(title != '') {
-                  keywords.forEach(function(keyword) {
-                    function getIndexByWord(word, text, caseSensitive) {
-                      var wordLen = word.length;
-                      if (wordLen === 0) {
-                        return [];
-                      }
-                      var startPosition = 0, position = [], index = [];
-                      if (!caseSensitive) {
-                        text = text.toLowerCase();
-                        word = word.toLowerCase();
-                      }
-                      while ((position = text.indexOf(word, startPosition)) > -1) {
-                        index.push({position: position, word: word});
-                        startPosition = position + wordLen;
-                      }
-                      return index;
-                    }
-
-                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
-                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
-                  });
-                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
-                    isMatch = true;
-                    hitCount = indexOfTitle.length + indexOfContent.length;
-                  }
-                }
-
-                // show search results
-
-                if (isMatch) {
-                  // sort index by position of keyword
-
-                  [indexOfTitle, indexOfContent].forEach(function (index) {
-                    index.sort(function (itemLeft, itemRight) {
-                      if (itemRight.position !== itemLeft.position) {
-                        return itemRight.position - itemLeft.position;
-                      } else {
-                        return itemLeft.word.length - itemRight.word.length;
-                      }
-                    });
-                  });
-
-                  // merge hits into slices
-
-                  function mergeIntoSlice(text, start, end, index) {
-                    var item = index[index.length - 1];
-                    var position = item.position;
-                    var word = item.word;
-                    var hits = [];
-                    var searchTextCountInSlice = 0;
-                    while (position + word.length <= end && index.length != 0) {
-                      if (word === searchText) {
-                        searchTextCountInSlice++;
-                      }
-                      hits.push({position: position, length: word.length});
-                      var wordEnd = position + word.length;
-
-                      // move to next position of hit
-
-                      index.pop();
-                      while (index.length != 0) {
-                        item = index[index.length - 1];
-                        position = item.position;
-                        word = item.word;
-                        if (wordEnd > position) {
-                          index.pop();
-                        } else {
-                          break;
-                        }
-                      }
-                    }
-                    searchTextCount += searchTextCountInSlice;
-                    return {
-                      hits: hits,
-                      start: start,
-                      end: end,
-                      searchTextCount: searchTextCountInSlice
-                    };
-                  }
-
-                  var slicesOfTitle = [];
-                  if (indexOfTitle.length != 0) {
-                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
-                  }
-
-                  var slicesOfContent = [];
-                  while (indexOfContent.length != 0) {
-                    var item = indexOfContent[indexOfContent.length - 1];
-                    var position = item.position;
-                    var word = item.word;
-                    // cut out 100 characters
-                    var start = position - 20;
-                    var end = position + 80;
-                    if(start < 0){
-                      start = 0;
-                    }
-                    if (end < position + word.length) {
-                      end = position + word.length;
-                    }
-                    if(end > content.length){
-                      end = content.length;
-                    }
-                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
-                  }
-
-                  // sort slices in content by search text's count and hits' count
-
-                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
-                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
-                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
-                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
-                      return sliceRight.hits.length - sliceLeft.hits.length;
-                    } else {
-                      return sliceLeft.start - sliceRight.start;
-                    }
-                  });
-
-                  // select top N slices in content
-
-                  var upperBound = parseInt('1');
-                  if (upperBound >= 0) {
-                    slicesOfContent = slicesOfContent.slice(0, upperBound);
-                  }
-
-                  // highlight title and content
-
-                  function highlightKeyword(text, slice) {
-                    var result = '';
-                    var prevEnd = slice.start;
-                    slice.hits.forEach(function (hit) {
-                      result += text.substring(prevEnd, hit.position);
-                      var end = hit.position + hit.length;
-                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
-                      prevEnd = end;
-                    });
-                    result += text.substring(prevEnd, slice.end);
-                    return result;
-                  }
-
-                  var resultItem = '';
-
-                  if (slicesOfTitle.length != 0) {
-                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
-                  } else {
-                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
-                  }
-
-                  slicesOfContent.forEach(function (slice) {
-                    resultItem += "<a href='" + articleUrl + "'>" +
-                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
-                      "...</p>" + "</a>";
-                  });
-
-                  resultItem += "</li>";
-                  resultItems.push({
-                    item: resultItem,
-                    searchTextCount: searchTextCount,
-                    hitCount: hitCount,
-                    id: resultItems.length
-                  });
-                }
-              })
-            };
-            if (keywords.length === 1 && keywords[0] === "") {
-              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
-            } else if (resultItems.length === 0) {
-              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
-            } else {
-              resultItems.sort(function (resultLeft, resultRight) {
-                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
-                  return resultRight.searchTextCount - resultLeft.searchTextCount;
-                } else if (resultLeft.hitCount !== resultRight.hitCount) {
-                  return resultRight.hitCount - resultLeft.hitCount;
-                } else {
-                  return resultRight.id - resultLeft.id;
-                }
-              });
-              var searchResultList = '<ul class=\"search-result-list\">';
-              resultItems.forEach(function (result) {
-                searchResultList += result.item;
-              })
-              searchResultList += "</ul>";
-              resultContent.innerHTML = searchResultList;
-            }
-          }
-
-          if ('auto' === 'auto') {
-            input.addEventListener('input', inputEventFunction);
-          } else {
-            $('.search-icon').click(inputEventFunction);
-            input.addEventListener('keypress', function (event) {
-              if (event.keyCode === 13) {
-                inputEventFunction();
-              }
-            });
-          }
-
-          // remove loading animation
-          $(".local-search-pop-overlay").remove();
-          $('body').css('overflow', '');
-
-          proceedsearch();
-        }
-      });
-    }
-
-    // handle and trigger popup window;
-    $('.popup-trigger').click(function(e) {
-      e.stopPropagation();
-      if (isfetched === false) {
-        searchFunc(path, 'local-search-input', 'local-search-result');
-      } else {
-        proceedsearch();
-      };
-    });
-
-    $('.popup-btn-close').click(onPopupClose);
-    $('.popup').click(function(e){
-      e.stopPropagation();
-    });
-    $(document).on('keyup', function (event) {
-      var shouldDismissSearchPopup = event.which === 27 &&
-        $('.search-popup').is(':visible');
-      if (shouldDismissSearchPopup) {
-        onPopupClose();
-      }
-    });
-  </script>
-
-
-
-
-
-  
-
-  
-
-  
-
+    <entry>
+      <title><![CDATA[apk加固原理]]></title>
+      <url>/2018/02/27/Android/</url>
+      <content type="html"><![CDATA[<p>本文主要通过学习姜维大神的<a href="http://www.520monkey.com/archives/553" target="_blank" rel="noopener">Android中的Apk的加固(加壳)原理解析和实现</a>和雪一梦大神的<a href="https://bbs.pediy.com/thread-223796.htm" target="_blank" rel="noopener">根据”so劫持”过360加固详细分析</a> 来记录自己的学习过程。</p>
+<blockquote>
+<h3 id="为什么要对APK加固"><a href="#为什么要对APK加固" class="headerlink" title="为什么要对APK加固"></a>为什么要对APK加固</h3></blockquote>
+<p>目前的软件发展速度非常快，尤其是移动端软件越来越深入人们的生活之中，我们时时刻刻都需要这些软件来进行支付，查询以及浏览信息。我们的隐私信息以及经济安全可谓是都在app之中。所以这也加快了Apk加固技术的发展，加固后的apk虽然增大了不法分子的破解难度，但是也明显降低了app的运行效率，所以有一些加固是针对于apk的主要逻辑代码进行的。加固也分为dex加固和so加固，但是呢，dex加固的重要性应该是更加高一点的，因为反编译后的java代码的可读性更高。</p>
+<blockquote>
+<h3 id="加固原理"><a href="#加固原理" class="headerlink" title="加固原理"></a>加固原理</h3></blockquote>
+<p>图片盗用姜维大神</p>
+<p><img src="/images/protectapk.png" alt=""></p>
+<p>从上图我们可以明白，apk加固主要步骤为：</p>
+<p>将一个需要加固的apk文件，一个负责解密的壳程序，先将apk文件进行加密，然后将解密的壳程序与之合并，得到新的dex文件，再将壳的dex文件替换，并得到一个全新的apk文件。将某个被加固的apk解压，如下图：</p>
+<p><img src="/images/jiagua.png" alt="assets文件夹"></p>
+<p>经过加密后的文件的assets文件夹中多出了两个libjiagu.so和libjiagu_x86.so文件，这就是apk被加固的标志。</p>
+<p><img src="/images/jadx.png" alt="dex文件"></p>
+<p>我们用jadx打开加压后的dex文件，看到和加固的原理一样，dex文件被替换。以上就是加固的原理。</p>
+<blockquote>
+<h3 id="Dex文件解析"><a href="#Dex文件解析" class="headerlink" title="Dex文件解析"></a>Dex文件解析</h3></blockquote>
+<p>这里我需要盗用一张非虫大神的图：</p>
+<p><img src="/images/Android dex文件格式结构图.png" alt="Android dex文件格式结构图"></p>
+<p>Dex是Android平台上(Dalvik虚拟机)的可执行文件。其实所有的加固，加密措施都是针对DexHeader中的checksum，signature和filesize来进行的，因为加固需要对dex文件进行改动，所以dex文件校验的数据也必须进行改动，知道了这个点之后，也就明白了，我们只要掌握dexheader其他的也就万变不离其宗了。</p>
+<p>首先根据图中所标注的，前8个字节是整个dex文件的magic（魔法数），其中低地址的4个字节的数据是dex文件</p>
+<p>的标识符，所有的dex文件的标志符都是一样的。高地址的4个字节数据是dex文件的版本，图中的dex文件版本是035。<code>0x08h-0x0Bh</code>这段地址上存放的是checksum，使用adler32加密算法，用来检验dex文件除magic和checksum以外的所有文件区域，检查错误。<code>0x0Ch-0x1Fh</code>这段地址上存放的是signature，使用SHA-1 hash算法，识别dex文件的唯一性。使用双重校验保证文件的安全性以及效率。<code>0x20h-0x23h</code>这段地址上存放的是这个dex文件的大小，<code>0x24h-0x27h</code>这段地址存放的是dexheader的大小，我发现好像所有的dexheader的大小都一样都是0x70，<code>0x28h-0x2Bh</code>这段地址上标志的是dex文件的字节序，像图中的0x78563412就是默认为小尾模式，跟C/C++中的小端模式一样<strong>即高地址存放低字节，低地址存放高字节</strong>，<code>0x2ch-0x2fh</code>中说明的是连接段的大小，默认为0表示静态连接。</p>
+<blockquote>
+<h3 id="Apk加固具体步骤"><a href="#Apk加固具体步骤" class="headerlink" title="Apk加固具体步骤"></a>Apk加固具体步骤</h3></blockquote>
+<p>首先我们需要一个需要加密的APK程序，在此我们就简单的写一个：</p>
+<p>主Application：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">App</span> <span class="keyword">extends</span> <span class="title">Application</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate();</span><br><span class="line">        Log.i(<span class="string">"mmm"</span>,<span class="string">"被加密APK载入"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个Application很简单就是打印一下Log。</p>
+<p>接下来是主Activity：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> TextView textView;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</span><br><span class="line">        setContentView(R.layout.activity_main);</span><br><span class="line">        textView=findViewById(R.id.text);</span><br><span class="line">        textView.setText(<span class="string">"被加密的App主页面"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>也是非常的简单，就是一个textview的展示。</p>
+<p>按照上面的流程我们需要对源APK进行加密，那么我们就需要一个加密的程序：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//加密的程序</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyMain</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">		<span class="comment">// TODO Auto-generated method stub</span></span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//读取源Apk</span></span><br><span class="line">			File payloadSrcFile=<span class="keyword">new</span> File(<span class="string">"force/ForceApkObj.apk"</span>);</span><br><span class="line">			<span class="comment">//读取脱壳程序的dex</span></span><br><span class="line">			File unShellDexFile=<span class="keyword">new</span> File(<span class="string">"force/ForceApk.dex"</span>);</span><br><span class="line">            <span class="comment">//将这个文件先转换为Byte，然后进行加密</span></span><br><span class="line">			<span class="keyword">byte</span>[] payloadArray=encrpt(readFileBytes(payloadSrcFile));</span><br><span class="line">            <span class="comment">//脱壳程序的dex也是一样</span></span><br><span class="line">			<span class="keyword">byte</span>[] unShellDexArray=readFileBytes(unShellDexFile);</span><br><span class="line">            <span class="comment">//分别得到这两个文件的大小，并计算出他们的总大小，最后加上的那4个字节存放的是目标APK的大小</span></span><br><span class="line">			<span class="keyword">int</span> payloadLen=payloadArray.length;</span><br><span class="line">			<span class="keyword">int</span> unShellDexLen=unShellDexArray.length;</span><br><span class="line">			<span class="keyword">int</span> totalLen=payloadLen+unShellDexLen+<span class="number">4</span>;</span><br><span class="line">			<span class="comment">//申请我们所需要的byte数组，大小就是上面的总量</span></span><br><span class="line">			<span class="keyword">byte</span>[] newdex=<span class="keyword">new</span> <span class="keyword">byte</span>[totalLen];</span><br><span class="line">			<span class="comment">//先将脱壳的dex写进我们所申请的数组当中，其次是被加密的APK，最后是目标Apk的大小</span></span><br><span class="line">			System.arraycopy(unShellDexArray, <span class="number">0</span>, newdex, <span class="number">0</span>, unShellDexLen);</span><br><span class="line">			</span><br><span class="line">			System.arraycopy(payloadArray, <span class="number">0</span>, newdex, unShellDexLen, payloadLen);</span><br><span class="line">			</span><br><span class="line">			System.arraycopy(intToByte(payloadLen),<span class="number">0</span>, newdex, totalLen-<span class="number">4</span>, <span class="number">4</span>);</span><br><span class="line">			<span class="comment">//分别修改dex文件大小，checksum和签名</span></span><br><span class="line">			fixFileSizeHeader(newdex);</span><br><span class="line">			</span><br><span class="line">			fixSHA1Header(newdex);</span><br><span class="line">			</span><br><span class="line">			fixCheckSumHeader(newdex);</span><br><span class="line">			</span><br><span class="line">			<span class="comment">//新创建一个dex文件，将我们完成的byte数组写入进去，这个dex也就是一个全新的dex</span></span><br><span class="line">			String str=<span class="string">"force/classes.dex"</span>;</span><br><span class="line">			File file =<span class="keyword">new</span> File(str);</span><br><span class="line">			<span class="keyword">if</span> (!file.exists()) &#123;</span><br><span class="line">				file.createNewFile();</span><br><span class="line">			&#125;</span><br><span class="line">			FileOutputStream localFileOutputStream=<span class="keyword">new</span> FileOutputStream(str);</span><br><span class="line">			localFileOutputStream.write(newdex);</span><br><span class="line">			localFileOutputStream.flush();</span><br><span class="line">			localFileOutputStream.close();</span><br><span class="line">			</span><br><span class="line">		&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">			<span class="comment">// <span class="doctag">TODO:</span> handle exception</span></span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">    <span class="comment">//这是apk的加密算法，使用每个byte异或一下</span></span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] encrpt(<span class="keyword">byte</span>[] srcdata) &#123;</span><br><span class="line">		<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;srcdata.length;i++) &#123;</span><br><span class="line">			srcdata[i]=(<span class="keyword">byte</span>)(<span class="number">0xFF</span>^srcdata[i]);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> srcdata;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">//checksum</span></span><br><span class="line">	<span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">fixCheckSumHeader</span><span class="params">(<span class="keyword">byte</span>[] dexBytes)</span> </span>&#123;</span><br><span class="line">		Adler32 adler32=<span class="keyword">new</span> Adler32();</span><br><span class="line">        <span class="comment">//一开始我没有搞的很清楚，通过重看checksum明白了，checksum使用的是Adler32算法，他是对整个dex文</span></span><br><span class="line">        <span class="comment">//件除了前8个字节的魔法数和4个字节自己以外进行文件的错误检查的，在这里我们使用Adler32对象update</span></span><br><span class="line">        <span class="comment">//方法重新生成checksum。</span></span><br><span class="line">		adler32.update(dexBytes, <span class="number">12</span>, dexBytes.length-<span class="number">12</span>);</span><br><span class="line">		<span class="keyword">long</span> value=adler32.getValue();</span><br><span class="line">		<span class="comment">//拿到的checksum</span></span><br><span class="line">		<span class="keyword">int</span> va=(<span class="keyword">int</span>)value;</span><br><span class="line">		<span class="keyword">byte</span>[] newcs=intToByte(va);</span><br><span class="line">		</span><br><span class="line">		<span class="keyword">byte</span>[] recs=<span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span>];</span><br><span class="line">        <span class="comment">//在之前已经知道了，dex文件是采用小端模式，即高字节放低地址，低字节放字高地址上</span></span><br><span class="line">		<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">4</span>;i++) &#123;</span><br><span class="line">			recs[i]=newcs[newcs.length-<span class="number">1</span>-i];</span><br><span class="line">			System.out.println(Integer.toHexString(newcs[i]));</span><br><span class="line">		&#125;</span><br><span class="line">        <span class="comment">//对dex的checksum进行修改</span></span><br><span class="line">		System.arraycopy(recs, <span class="number">0</span>, dexBytes, <span class="number">8</span>, <span class="number">4</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">    <span class="comment">//int转换成Byte</span></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] intToByte(<span class="keyword">int</span> number) &#123;</span><br><span class="line">		<span class="keyword">byte</span>[] b=<span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span>];</span><br><span class="line">		<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">3</span>;i&gt;=<span class="number">0</span>;i--) &#123;</span><br><span class="line">			b[i]=(<span class="keyword">byte</span>)(number%<span class="number">256</span>);</span><br><span class="line">			number&gt;&gt;=<span class="number">8</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> b;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//修改dex文件的签名</span></span><br><span class="line">	<span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">fixSHA1Header</span><span class="params">(<span class="keyword">byte</span>[] dexBytes)</span> <span class="keyword">throws</span> </span></span><br><span class="line"><span class="function">	NoSuchAlgorithmException</span>&#123;</span><br><span class="line">        <span class="comment">//dex文件的签名方式使用SHA-1加密</span></span><br><span class="line">		MessageDigest mDigest=MessageDigest.getInstance(<span class="string">"SHA-1"</span>);</span><br><span class="line">		mDigest.update(dexBytes, <span class="number">32</span>, dexBytes.length-<span class="number">32</span>);</span><br><span class="line">		<span class="keyword">byte</span>[] newdt=mDigest.digest();</span><br><span class="line">		System.arraycopy(newdt, <span class="number">0</span>, dexBytes, <span class="number">12</span>, <span class="number">20</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">    <span class="comment">//修改dex头文件的中的file_size</span></span><br><span class="line">	<span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">fixFileSizeHeader</span><span class="params">(<span class="keyword">byte</span>[] dexBytes)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">byte</span>[] newfs=intToByte(dexBytes.length);</span><br><span class="line">		<span class="keyword">byte</span>[] refs=<span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span>];</span><br><span class="line">		<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">4</span>;i++) &#123;</span><br><span class="line">			refs[i]=newfs[newfs.length-<span class="number">1</span>-i];</span><br><span class="line">		&#125;</span><br><span class="line">		System.arraycopy(refs, <span class="number">0</span>, dexBytes, <span class="number">32</span>, <span class="number">4</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">    <span class="comment">//将源APk转换为Byte数组</span></span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] readFileBytes(File file) <span class="keyword">throws</span> IOException&#123;</span><br><span class="line">		<span class="keyword">byte</span>[] arrayOfByte=<span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">1024</span>];</span><br><span class="line">		ByteArrayOutputStream localByteArrayOutputStream =<span class="keyword">new</span> ByteArrayOutputStream();</span><br><span class="line">		FileInputStream fis=<span class="keyword">new</span> FileInputStream(file);</span><br><span class="line">		<span class="keyword">while</span>(<span class="keyword">true</span>) &#123;</span><br><span class="line">			<span class="keyword">int</span> i=fis.read(arrayOfByte);</span><br><span class="line">			<span class="keyword">if</span> (i!=-<span class="number">1</span>) &#123;</span><br><span class="line">				localByteArrayOutputStream.write(arrayOfByte,<span class="number">0</span>,i);</span><br><span class="line">			&#125;<span class="keyword">else</span> &#123;</span><br><span class="line">				<span class="keyword">return</span> localByteArrayOutputStream.toByteArray();</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在想一想，现在合并之后的Apk是如何找到源Apk进行加载的呢。因为类的加载都是通过classloader来进行加载的，那是不是可以说，我们只需要更改脱壳程序中的classloader就可以让他来加载源Apk程序了，那么这里又产生了一个问题，那就是他只会加载源程序，但是脱壳程的逻辑并不会执行，那这样就会导致源程序无法被解密，这样运行也是失败的，所以我们需要使这个加载源程序的dexclassloader以原来的classloader为父节点，那么这样脱壳程序也能顺利的执行并对源程序解密。</p>
+<p>脱壳程序（这里我直接拿四哥的源码，在他基础上我继续分析一下）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**这个是脱壳程序的application，主要做了两个重要的部分，1首先对源加密的apk进行解密。2使用动态加载来加载</span></span><br><span class="line"><span class="comment">*源APK的application让他执行自己的生命周期，因为attachBaseContext()他要比oncreate()执行靠前，所以源apk</span></span><br><span class="line"><span class="comment">*的解密工作就需要在这个方法中做。首先从Apk中拿到合并后的dex文件，然后根据尾部的大小，将源APK取出来，这时*候，apk依然是byte数组，然后我们对他进行解密操作，另外自定义dexclassloader，来加载源APK。在脱壳程序中的</span></span><br><span class="line"><span class="comment">*oncreate方法中主要是通过反射将当前的Application替换为源程序的Application。其实在ActivityThread中有一*个内部类，AppBindData,这个类里有启动的app的所有详细信息，我们只需要将这个类里的属性值通过反射进行置换就*可以了。</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ProxyApplication</span> <span class="keyword">extends</span> <span class="title">Application</span></span>&#123;  </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String appkey = <span class="string">"APPLICATION_CLASS_NAME"</span>;  </span><br><span class="line">    <span class="keyword">private</span> String apkFileName;  </span><br><span class="line">    <span class="keyword">private</span> String odexPath;  </span><br><span class="line">    <span class="keyword">private</span> String libPath;  </span><br><span class="line">  </span><br><span class="line">    <span class="comment">//这是context 赋值  </span></span><br><span class="line">    <span class="meta">@Override</span>  </span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">attachBaseContext</span><span class="params">(Context base)</span> </span>&#123;  </span><br><span class="line">        <span class="keyword">super</span>.attachBaseContext(base);  </span><br><span class="line">        <span class="keyword">try</span> &#123;  </span><br><span class="line">            <span class="comment">//创建两个文件夹payload_odex，payload_lib 私有的，可写的文件目录  </span></span><br><span class="line">            File odex = <span class="keyword">this</span>.getDir(<span class="string">"payload_odex"</span>, MODE_PRIVATE);  </span><br><span class="line">            File libs = <span class="keyword">this</span>.getDir(<span class="string">"payload_lib"</span>, MODE_PRIVATE);  </span><br><span class="line">            odexPath = odex.getAbsolutePath();  </span><br><span class="line">            libPath = libs.getAbsolutePath();  </span><br><span class="line">            apkFileName = odex.getAbsolutePath() + <span class="string">"/payload.apk"</span>;  </span><br><span class="line">            File dexFile = <span class="keyword">new</span> File(apkFileName);  </span><br><span class="line">            Log.i(<span class="string">"demo"</span>, <span class="string">"apk size:"</span>+dexFile.length());  </span><br><span class="line">            <span class="keyword">if</span> (!dexFile.exists())  </span><br><span class="line">            &#123;  </span><br><span class="line">                dexFile.createNewFile();  <span class="comment">//在payload_odex文件夹内，创建payload.apk  </span></span><br><span class="line">                <span class="comment">// 读取程序classes.dex文件  </span></span><br><span class="line">                <span class="keyword">byte</span>[] dexdata = <span class="keyword">this</span>.readDexFileFromApk();  </span><br><span class="line">                  </span><br><span class="line">                <span class="comment">// 分离出解壳后的apk文件已用于动态加载  </span></span><br><span class="line">                <span class="keyword">this</span>.splitPayLoadFromDex(dexdata);  </span><br><span class="line">            &#125;  </span><br><span class="line">            <span class="comment">// 配置动态加载环境  </span></span><br><span class="line">            Object currentActivityThread = RefInvoke.invokeStaticMethod(  </span><br><span class="line">                    <span class="string">"android.app.ActivityThread"</span>, <span class="string">"currentActivityThread"</span>,  </span><br><span class="line">                    <span class="keyword">new</span> Class[] &#123;&#125;, <span class="keyword">new</span> Object[] &#123;&#125;);<span class="comment">//获取主线程对象 http://blog.csdn.net/myarrow/article/details/14223493  </span></span><br><span class="line">            String packageName = <span class="keyword">this</span>.getPackageName();<span class="comment">//当前apk的包名  </span></span><br><span class="line">            <span class="comment">//下面两句不是太理解  </span></span><br><span class="line">            ArrayMap mPackages = (ArrayMap) RefInvoke.getFieldOjbect(  </span><br><span class="line">                    <span class="string">"android.app.ActivityThread"</span>, currentActivityThread,  </span><br><span class="line">                    <span class="string">"mPackages"</span>);  </span><br><span class="line">            WeakReference wr = (WeakReference) mPackages.get(packageName);  </span><br><span class="line">            <span class="comment">//创建被加壳apk的DexClassLoader对象  加载apk内的类和本地代码（c/c++代码）  </span></span><br><span class="line">            DexClassLoader dLoader = <span class="keyword">new</span> DexClassLoader(apkFileName, odexPath,  </span><br><span class="line">                    libPath, (ClassLoader) RefInvoke.getFieldOjbect(  </span><br><span class="line">                            <span class="string">"android.app.LoadedApk"</span>, wr.get(), <span class="string">"mClassLoader"</span>));  </span><br><span class="line">            <span class="comment">//base.getClassLoader(); 是不是就等同于 (ClassLoader) RefInvoke.getFieldOjbect()? 有空验证下//?  </span></span><br><span class="line">            <span class="comment">//把当前进程的DexClassLoader 设置成了被加壳apk的DexClassLoader  ----有点c++中进程环境的意思~~  </span></span><br><span class="line">            RefInvoke.setFieldOjbect(<span class="string">"android.app.LoadedApk"</span>, <span class="string">"mClassLoader"</span>,  </span><br><span class="line">                    wr.get(), dLoader);  </span><br><span class="line">              </span><br><span class="line">            <span class="keyword">try</span>&#123;  </span><br><span class="line">                Object actObj = dLoader.loadClass(<span class="string">"com.example.forceapkobj.MainActivity"</span>);  </span><br><span class="line">                Log.i(<span class="string">"demo"</span>, <span class="string">"actObj:"</span>+actObj);  </span><br><span class="line">            &#125;<span class="keyword">catch</span>(Exception e)&#123;  </span><br><span class="line">                Log.i(<span class="string">"demo"</span>, <span class="string">"activity:"</span>+Log.getStackTraceString(e));  </span><br><span class="line">            &#125;  </span><br><span class="line">              </span><br><span class="line">  </span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;  </span><br><span class="line">            Log.i(<span class="string">"demo"</span>, <span class="string">"error:"</span>+Log.getStackTraceString(e));  </span><br><span class="line">            e.printStackTrace();  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    <span class="meta">@Override</span>  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">        &#123;  </span><br><span class="line">            <span class="comment">//loadResources(apkFileName);  </span></span><br><span class="line">              </span><br><span class="line">            Log.i(<span class="string">"demo"</span>, <span class="string">"onCreate"</span>);  </span><br><span class="line">            <span class="comment">// 如果源应用配置有Appliction对象，则替换为源应用Applicaiton，以便不影响源程序逻辑。  </span></span><br><span class="line">            String appClassName = <span class="keyword">null</span>;  </span><br><span class="line">            <span class="keyword">try</span> &#123;  </span><br><span class="line">                ApplicationInfo ai = <span class="keyword">this</span>.getPackageManager()  </span><br><span class="line">                        .getApplicationInfo(<span class="keyword">this</span>.getPackageName(),  </span><br><span class="line">                                PackageManager.GET_META_DATA);  </span><br><span class="line">                Bundle bundle = ai.metaData;  </span><br><span class="line">                <span class="keyword">if</span> (bundle != <span class="keyword">null</span> &amp;&amp; bundle.containsKey(<span class="string">"APPLICATION_CLASS_NAME"</span>)) &#123;  </span><br><span class="line">                    appClassName = bundle.getString(<span class="string">"APPLICATION_CLASS_NAME"</span>);<span class="comment">//className 是配置在xml文件中的。  </span></span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;  </span><br><span class="line">                    Log.i(<span class="string">"demo"</span>, <span class="string">"have no application class name"</span>);  </span><br><span class="line">                    <span class="keyword">return</span>;  </span><br><span class="line">                &#125;  </span><br><span class="line">            &#125; <span class="keyword">catch</span> (NameNotFoundException e) &#123;  </span><br><span class="line">                Log.i(<span class="string">"demo"</span>, <span class="string">"error:"</span>+Log.getStackTraceString(e));  </span><br><span class="line">                e.printStackTrace();  </span><br><span class="line">            &#125;  </span><br><span class="line">            <span class="comment">//有值的话调用该Applicaiton  </span></span><br><span class="line">            Object currentActivityThread = RefInvoke.invokeStaticMethod(  </span><br><span class="line">                    <span class="string">"android.app.ActivityThread"</span>, <span class="string">"currentActivityThread"</span>,  </span><br><span class="line">                    <span class="keyword">new</span> Class[] &#123;&#125;, <span class="keyword">new</span> Object[] &#123;&#125;);  </span><br><span class="line">            Object mBoundApplication = RefInvoke.getFieldOjbect(  </span><br><span class="line">                    <span class="string">"android.app.ActivityThread"</span>, currentActivityThread,  </span><br><span class="line">                    <span class="string">"mBoundApplication"</span>);  </span><br><span class="line">            Object loadedApkInfo = RefInvoke.getFieldOjbect(  </span><br><span class="line">                    <span class="string">"android.app.ActivityThread$AppBindData"</span>,  </span><br><span class="line">                    mBoundApplication, <span class="string">"info"</span>);  </span><br><span class="line">            <span class="comment">//把当前进程的mApplication 设置成了null  </span></span><br><span class="line">            RefInvoke.setFieldOjbect(<span class="string">"android.app.LoadedApk"</span>, <span class="string">"mApplication"</span>,  </span><br><span class="line">                    loadedApkInfo, <span class="keyword">null</span>);  </span><br><span class="line">            Object oldApplication = RefInvoke.getFieldOjbect(  </span><br><span class="line">                    <span class="string">"android.app.ActivityThread"</span>, currentActivityThread,  </span><br><span class="line">                    <span class="string">"mInitialApplication"</span>);  </span><br><span class="line">            <span class="comment">//http://www.codeceo.com/article/android-context.html  </span></span><br><span class="line">            ArrayList&lt;Application&gt; mAllApplications = (ArrayList&lt;Application&gt;) RefInvoke  </span><br><span class="line">                    .getFieldOjbect(<span class="string">"android.app.ActivityThread"</span>,  </span><br><span class="line">                            currentActivityThread, <span class="string">"mAllApplications"</span>);  </span><br><span class="line">            mAllApplications.remove(oldApplication);<span class="comment">//删除oldApplication  </span></span><br><span class="line">              </span><br><span class="line">            ApplicationInfo appinfo_In_LoadedApk = (ApplicationInfo) RefInvoke  </span><br><span class="line">                    .getFieldOjbect(<span class="string">"android.app.LoadedApk"</span>, loadedApkInfo,  </span><br><span class="line">                            <span class="string">"mApplicationInfo"</span>);  </span><br><span class="line">            ApplicationInfo appinfo_In_AppBindData = (ApplicationInfo) RefInvoke  </span><br><span class="line">                    .getFieldOjbect(<span class="string">"android.app.ActivityThread$AppBindData"</span>,  </span><br><span class="line">                            mBoundApplication, <span class="string">"appInfo"</span>);  </span><br><span class="line">            appinfo_In_LoadedApk.className = appClassName;  </span><br><span class="line">            appinfo_In_AppBindData.className = appClassName;  </span><br><span class="line">            Application app = (Application) RefInvoke.invokeMethod(  </span><br><span class="line">                    <span class="string">"android.app.LoadedApk"</span>, <span class="string">"makeApplication"</span>, loadedApkInfo,  </span><br><span class="line">                    <span class="keyword">new</span> Class[] &#123; Boolean.class, Instrumentation.class &#125;,  </span><br><span class="line">                    <span class="keyword">new</span> Object[] &#123; <span class="keyword">false</span>, <span class="keyword">null</span> &#125;);<span class="comment">//执行 makeApplication（false,null）  </span></span><br><span class="line">            RefInvoke.setFieldOjbect(<span class="string">"android.app.ActivityThread"</span>,  </span><br><span class="line">                    <span class="string">"mInitialApplication"</span>, currentActivityThread, app);  </span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">           </span><br><span class="line">            <span class="comment">//这里我还有点搞不明白。我猜应该是，将原来的provider替换为源apk的，这样才能保证程序的正常</span></span><br><span class="line">            ArrayMap mProviderMap = (ArrayMap) RefInvoke.getFieldOjbect(  </span><br><span class="line">                    <span class="string">"android.app.ActivityThread"</span>, currentActivityThread,  </span><br><span class="line">                    <span class="string">"mProviderMap"</span>);  </span><br><span class="line">            Iterator it = mProviderMap.values().iterator();  </span><br><span class="line">            <span class="keyword">while</span> (it.hasNext()) &#123;  </span><br><span class="line">                Object providerClientRecord = it.next();  </span><br><span class="line">                Object localProvider = RefInvoke.getFieldOjbect(  </span><br><span class="line">                        <span class="string">"android.app.ActivityThread$ProviderClientRecord"</span>,  </span><br><span class="line">                        providerClientRecord, <span class="string">"mLocalProvider"</span>);  </span><br><span class="line">                RefInvoke.setFieldOjbect(<span class="string">"android.content.ContentProvider"</span>,  </span><br><span class="line">                        <span class="string">"mContext"</span>, localProvider, app);  </span><br><span class="line">            &#125;  </span><br><span class="line"></span><br><span class="line">              </span><br><span class="line">            app.onCreate();  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    <span class="comment">/** </span></span><br><span class="line"><span class="comment">     * 释放被加壳的apk文件，so文件 </span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> data </span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> IOException </span></span><br><span class="line"><span class="comment">     */</span>  </span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">splitPayLoadFromDex</span><span class="params">(<span class="keyword">byte</span>[] apkdata)</span> <span class="keyword">throws</span> IOException </span>&#123;  </span><br><span class="line">        <span class="keyword">int</span> ablen = apkdata.length;  </span><br><span class="line">        <span class="comment">//取被加壳apk的长度   这里的长度取值，对应加壳时长度的赋值都可以做些简化  </span></span><br><span class="line">        <span class="keyword">byte</span>[] dexlen = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span>];  </span><br><span class="line">        System.arraycopy(apkdata, ablen - <span class="number">4</span>, dexlen, <span class="number">0</span>, <span class="number">4</span>);  </span><br><span class="line">        ByteArrayInputStream bais = <span class="keyword">new</span> ByteArrayInputStream(dexlen);  </span><br><span class="line">        DataInputStream in = <span class="keyword">new</span> DataInputStream(bais);  </span><br><span class="line">        <span class="keyword">int</span> readInt = in.readInt();  </span><br><span class="line">        System.out.println(Integer.toHexString(readInt));  </span><br><span class="line">        <span class="keyword">byte</span>[] newdex = <span class="keyword">new</span> <span class="keyword">byte</span>[readInt];  </span><br><span class="line">        <span class="comment">//把被加壳apk内容拷贝到newdex中  </span></span><br><span class="line">        System.arraycopy(apkdata, ablen - <span class="number">4</span> - readInt, newdex, <span class="number">0</span>, readInt);  </span><br><span class="line">        <span class="comment">//这里应该加上对于apk的解密操作，若加壳是加密处理的话  </span></span><br><span class="line">        <span class="comment">//?  </span></span><br><span class="line">          </span><br><span class="line">        <span class="comment">//对源程序Apk进行解密  </span></span><br><span class="line">        newdex = decrypt(newdex);  </span><br><span class="line">          </span><br><span class="line">        <span class="comment">//写入apk文件     </span></span><br><span class="line">        File file = <span class="keyword">new</span> File(apkFileName);  </span><br><span class="line">        <span class="keyword">try</span> &#123;  </span><br><span class="line">            FileOutputStream localFileOutputStream = <span class="keyword">new</span> FileOutputStream(file);  </span><br><span class="line">            localFileOutputStream.write(newdex);  </span><br><span class="line">            localFileOutputStream.close();  </span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException localIOException) &#123;  </span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(localIOException);  </span><br><span class="line">        &#125;  </span><br><span class="line">          </span><br><span class="line">        <span class="comment">//分析被加壳的apk文件  </span></span><br><span class="line">        ZipInputStream localZipInputStream = <span class="keyword">new</span> ZipInputStream(  </span><br><span class="line">                <span class="keyword">new</span> BufferedInputStream(<span class="keyword">new</span> FileInputStream(file)));  </span><br><span class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;  </span><br><span class="line">            ZipEntry localZipEntry = localZipInputStream.getNextEntry();<span class="comment">//不了解这个是否也遍历子目录，看样子应该是遍历的  </span></span><br><span class="line">            <span class="keyword">if</span> (localZipEntry == <span class="keyword">null</span>) &#123;  </span><br><span class="line">                localZipInputStream.close();  </span><br><span class="line">                <span class="keyword">break</span>;  </span><br><span class="line">            &#125;  </span><br><span class="line">            <span class="comment">//取出被加壳apk用到的so文件，放到 libPath中（data/data/包名/payload_lib)  </span></span><br><span class="line">            String name = localZipEntry.getName();  </span><br><span class="line">            <span class="keyword">if</span> (name.startsWith(<span class="string">"lib/"</span>) &amp;&amp; name.endsWith(<span class="string">".so"</span>)) &#123;  </span><br><span class="line">                File storeFile = <span class="keyword">new</span> File(libPath + <span class="string">"/"</span>  </span><br><span class="line">                        + name.substring(name.lastIndexOf(<span class="string">'/'</span>)));  </span><br><span class="line">                storeFile.createNewFile();  </span><br><span class="line">                FileOutputStream fos = <span class="keyword">new</span> FileOutputStream(storeFile);  </span><br><span class="line">                <span class="keyword">byte</span>[] arrayOfByte = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">1024</span>];  </span><br><span class="line">                <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;  </span><br><span class="line">                    <span class="keyword">int</span> i = localZipInputStream.read(arrayOfByte);  </span><br><span class="line">                    <span class="keyword">if</span> (i == -<span class="number">1</span>)  </span><br><span class="line">                        <span class="keyword">break</span>;  </span><br><span class="line">                    fos.write(arrayOfByte, <span class="number">0</span>, i);  </span><br><span class="line">                &#125;  </span><br><span class="line">                fos.flush();  </span><br><span class="line">                fos.close();  </span><br><span class="line">            &#125;  </span><br><span class="line">            localZipInputStream.closeEntry();  </span><br><span class="line">        &#125;  </span><br><span class="line">        localZipInputStream.close();  </span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    <span class="comment">/** </span></span><br><span class="line"><span class="comment">     * 从apk包里面获取dex文件内容（byte） </span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> </span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> IOException </span></span><br><span class="line"><span class="comment">     */</span>  </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">byte</span>[] readDexFileFromApk() <span class="keyword">throws</span> IOException &#123;  </span><br><span class="line">        ByteArrayOutputStream dexByteArrayOutputStream = <span class="keyword">new</span> ByteArrayOutputStream();  </span><br><span class="line">        ZipInputStream localZipInputStream = <span class="keyword">new</span> ZipInputStream(  </span><br><span class="line">                <span class="keyword">new</span> BufferedInputStream(<span class="keyword">new</span> FileInputStream(  </span><br><span class="line">                        <span class="keyword">this</span>.getApplicationInfo().sourceDir)));  </span><br><span class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;  </span><br><span class="line">            ZipEntry localZipEntry = localZipInputStream.getNextEntry();  </span><br><span class="line">            <span class="keyword">if</span> (localZipEntry == <span class="keyword">null</span>) &#123;  </span><br><span class="line">                localZipInputStream.close();  </span><br><span class="line">                <span class="keyword">break</span>;  </span><br><span class="line">            &#125;  </span><br><span class="line">            <span class="keyword">if</span> (localZipEntry.getName().equals(<span class="string">"classes.dex"</span>)) &#123;  </span><br><span class="line">                <span class="keyword">byte</span>[] arrayOfByte = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">1024</span>];  </span><br><span class="line">                <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;  </span><br><span class="line">                    <span class="keyword">int</span> i = localZipInputStream.read(arrayOfByte);  </span><br><span class="line">                    <span class="keyword">if</span> (i == -<span class="number">1</span>)  </span><br><span class="line">                        <span class="keyword">break</span>;  </span><br><span class="line">                    dexByteArrayOutputStream.write(arrayOfByte, <span class="number">0</span>, i);  </span><br><span class="line">                &#125;  </span><br><span class="line">            &#125;  </span><br><span class="line">            localZipInputStream.closeEntry();  </span><br><span class="line">        &#125;  </span><br><span class="line">        localZipInputStream.close();  </span><br><span class="line">        <span class="keyword">return</span> dexByteArrayOutputStream.toByteArray();  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">    <span class="comment">// //直接返回数据，读者可以添加自己解密方法  </span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">byte</span>[] decrypt(<span class="keyword">byte</span>[] srcdata) &#123;  </span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;srcdata.length;i++)&#123;  </span><br><span class="line">            srcdata[i] = (<span class="keyword">byte</span>)(<span class="number">0xFF</span> ^ srcdata[i]);  </span><br><span class="line">        &#125;  </span><br><span class="line">        <span class="keyword">return</span> srcdata;  </span><br><span class="line">    &#125;  </span><br><span class="line">      </span><br><span class="line">      </span><br><span class="line">    <span class="comment">//以下是加载资源  </span></span><br><span class="line">    <span class="keyword">protected</span> AssetManager mAssetManager;<span class="comment">//资源管理器    </span></span><br><span class="line">    <span class="keyword">protected</span> Resources mResources;<span class="comment">//资源    </span></span><br><span class="line">    <span class="keyword">protected</span> Theme mTheme;<span class="comment">//主题    </span></span><br><span class="line">      </span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">loadResources</span><span class="params">(String dexPath)</span> </span>&#123;    </span><br><span class="line">        <span class="keyword">try</span> &#123;    </span><br><span class="line">            AssetManager assetManager = AssetManager.class.newInstance();    </span><br><span class="line">            Method addAssetPath = assetManager.getClass().getMethod(<span class="string">"addAssetPath"</span>, String.class);    </span><br><span class="line">            addAssetPath.invoke(assetManager, dexPath);    </span><br><span class="line">            mAssetManager = assetManager;    </span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;    </span><br><span class="line">            Log.i(<span class="string">"inject"</span>, <span class="string">"loadResource error:"</span>+Log.getStackTraceString(e));  </span><br><span class="line">            e.printStackTrace();    </span><br><span class="line">        &#125;    </span><br><span class="line">        Resources superRes = <span class="keyword">super</span>.getResources();    </span><br><span class="line">        superRes.getDisplayMetrics();    </span><br><span class="line">        superRes.getConfiguration();    </span><br><span class="line">        mResources = <span class="keyword">new</span> Resources(mAssetManager, superRes.getDisplayMetrics(),superRes.getConfiguration());    </span><br><span class="line">        mTheme = mResources.newTheme();    </span><br><span class="line">        mTheme.setTo(<span class="keyword">super</span>.getTheme());  </span><br><span class="line">    &#125;    </span><br><span class="line">      </span><br><span class="line">    <span class="meta">@Override</span>    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> AssetManager <span class="title">getAssets</span><span class="params">()</span> </span>&#123;    </span><br><span class="line">        <span class="keyword">return</span> mAssetManager == <span class="keyword">null</span> ? <span class="keyword">super</span>.getAssets() : mAssetManager;    </span><br><span class="line">    &#125;    </span><br><span class="line">      </span><br><span class="line">    <span class="meta">@Override</span>    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> Resources <span class="title">getResources</span><span class="params">()</span> </span>&#123;    </span><br><span class="line">        <span class="keyword">return</span> mResources == <span class="keyword">null</span> ? <span class="keyword">super</span>.getResources() : mResources;    </span><br><span class="line">    &#125;    </span><br><span class="line">      </span><br><span class="line">    <span class="meta">@Override</span>    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> Theme <span class="title">getTheme</span><span class="params">()</span> </span>&#123;    </span><br><span class="line">        <span class="keyword">return</span> mTheme == <span class="keyword">null</span> ? <span class="keyword">super</span>.getTheme() : mTheme;    </span><br><span class="line">    &#125;   </span><br><span class="line">      </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后，我们就把脱壳程序中的dex文件替换为合并之后的dex文件，再重新签个名。但是我走到这一步，总是出现安装失败的问题，我猜应该是重新签名索引发的问题，我将继续实验。</p>
+]]></content>
+      
+        <categories>
+            
+            <category> Android </category>
+            
+        </categories>
+        
+        
+        <tags>
+            
+            <tag> Android </tag>
+            
+        </tags>
+        
+    </entry>
+    
+    <entry>
+      <title><![CDATA[smali语法]]></title>
+      <url>/2018/02/26/smali/</url>
+      <content type="html"><![CDATA[<blockquote>
+<h3 id="smali中的包信息"><a href="#smali中的包信息" class="headerlink" title="smali中的包信息"></a>smali中的包信息</h3></blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.class <span class="keyword">public</span> Lcom/a;</span><br><span class="line">.<span class="keyword">super</span> Lcom/b;</span><br><span class="line">.source <span class="string">"c.java"</span></span><br></pre></td></tr></table></figure>
+<p>这是一个由c.java编译得到的smail文件。他是com.a这个包下的一个类，继承自com.b这个类。</p>
+<blockquote>
+<h3 id="smali中的声明"><a href="#smali中的声明" class="headerlink" title="smali中的声明"></a>smali中的声明</h3></blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># annotations</span><br><span class="line">.annotations system Ldalvik/annotation/MemberClasses;</span><br><span class="line">value=&#123;</span><br><span class="line">  Lcom/a$z;</span><br><span class="line">  Lcom/a$x;</span><br><span class="line">&#125;</span><br><span class="line">.end annotation</span><br></pre></td></tr></table></figure>
+<p>这个模块是内部类的声明，a这个类中有两个成员内部类：z和x。</p>
+<blockquote>
+<h3 id="smali中的寄存器"><a href="#smali中的寄存器" class="headerlink" title="smali中的寄存器"></a>smali中的寄存器</h3></blockquote>
+<p>在smail中所有的操作都必须经过寄存器来进行。本地寄存器用v来表示，例如v0，v1，v2等。参数寄存器用p来表示，例如p0，p1，p2等。特别的一点是，p0并不一定是函数中的第一个参数，在非静态方法中，它指代“this”，p1表示函数的第一个参数。而在静态方法中，p0就是函数的第一个参数。</p>
+<blockquote>
+<h3 id="寄存器的表示"><a href="#寄存器的表示" class="headerlink" title="寄存器的表示"></a>寄存器的表示</h3></blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span>/<span class="number">4</span> v0,<span class="number">0x1</span></span><br><span class="line">iput-<span class="keyword">boolean</span> v0,p0,Lcom/a;-&gt;isTrue:Z</span><br></pre></td></tr></table></figure>
+<p>上面的代码块首先使用了v0本地寄存器，并把值0x1存到v0中，第二句用<code>iput-boolean</code>这个指令把v0中的值存放到com.a.isTrue这个成员变量中，即：<code>this.isTrue=true；</code>。</p>
+<blockquote>
+<h3 id="smali中的成员变量"><a href="#smali中的成员变量" class="headerlink" title="smali中的成员变量"></a>smali中的成员变量</h3></blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.field <span class="keyword">public</span>/<span class="keyword">private</span> [<span class="keyword">static</span>] [<span class="keyword">final</span>] varName:&lt;类型&gt;</span><br></pre></td></tr></table></figure>
+<p>对于不同的成员变量有不同的指令。一般的获取指令有:<code>iget,sget,iget-boolean,sget-boolean,iget-object,sget-object</code> 一般的操作指令有：<code>iput,sput,iput-boolean,sput-boolean,iput-object,sput-object</code></p>
+<p>其中没有-object后缀的表示操作的是基本数据类型，反之操作的是对象。操作boolean类型需要添加后缀-boolean。</p>
+<blockquote>
+<h3 id="smali成员变量指令"><a href="#smali成员变量指令" class="headerlink" title="smali成员变量指令"></a>smali成员变量指令</h3></blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sget-object v0,Lcom/a;-&gt;ID:Ljava/lang/String;</span><br></pre></td></tr></table></figure>
+<p>获取ID这个String类型的成员变量放到寄存器V0中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iget-object v0,p0,Lcom/a;-&gt;view:Lcom/a/view;</span><br></pre></td></tr></table></figure>
+<p>iget比sget多了一个参数寄存器p0这个就是指代该成员变量所在类的实例，即p0指代“this”。</p>
+<p>对于获取array数组的操作的指令是aget，aget-object。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span>/<span class="number">4</span> v3,<span class="number">0x0</span></span><br><span class="line">sput-object v3,Lcom/a;-&gt;timer:Lcom/a/timer;</span><br></pre></td></tr></table></figure>
+<p>以上两行指令相当于<code>timer=null;</code> 如果后缀为-boolean那么0x0代表false；</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.local v0,args:Landroid/os/Message;</span><br><span class="line"><span class="keyword">const</span>/<span class="number">4</span> v1,<span class="number">0x12</span></span><br><span class="line">iput v1,v0,Landroid/os/Message;-&gt;what:I;</span><br></pre></td></tr></table></figure>
+<p>上面3行指令相当于：<code>args.what=18;</code></p>
+<blockquote>
+<h3 id="smali函数的调用"><a href="#smali函数的调用" class="headerlink" title="smali函数的调用"></a>smali函数的调用</h3></blockquote>
+<p>smali中的函数和成员变量一样也分为两种类型，direct method和virtual method。</p>
+<p>direct method代表的函数是private的，virtual method则代表的是public和protected，所以在调用函数时有invoke-direct和invoke-virtual，invoke-static，invoke-super及invoke-interface等几种不同的指令。对于参数多于4个的函数，调用的形式为invoke-XXXXX/range</p>
+<p>invoke-static表示调用的是静态函数。例如<code>invoke-static {},Landroid/os/Debug;-&gt;waitForDebugger()V;</code>。</p>
+<p>invoke-static后面的{}表示调用此函数的实例和参数列表，由于这个方法是static的也不需要参数，所以{}为空。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span>-string v0,<span class="string">"NDKLIB"</span></span><br><span class="line">invoke-<span class="keyword">static</span> &#123;v0&#125;,Ljava/lang/System;-&gt;lodaLibrary(Ljava/lang/Sting;)V</span><br></pre></td></tr></table></figure>
+<p>这两行指令表示调用static void System.loadlibrary(String)方法。</p>
+<p>invoke-super调用父类方法的指令，生命周期方法中用的较多。</p>
+<p><code>invoke-direct {p0},Landroid/app/TabActivity;-&gt;&lt;init&gt;()V</code> 这个init()方法就是定义在TabActivity中的private方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sget-object v0,Lcom/a;-&gt;b:Lcom/c;</span><br><span class="line">invoke-virtual &#123;v0,v1&#125;,Lcom/c;-&gt;Messages(Ljava/lang/Object;)V</span><br></pre></td></tr></table></figure>
+<p>v0是b:Lcom/c ,v1是传递给void Messages(Object)方法的参数。</p>
+<p>如果函数的参数多于4个（不包括4个）时调用方法的指令后跟/range ,例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">invoke-direct/range &#123;v0...v5&#125;,Lcmb/pb/ui/PBContainerActivity;-&gt;h(ILjava/lang/CharSequence;Ljava/lang/String;Landroid/content/Intent;I)Z</span><br></pre></td></tr></table></figure>
+<p>需要传递v0到v5共6个参数，{}中采用省略号形式，且连续。</p>
+<blockquote>
+<h3 id="smali中函数结果的返回操作"><a href="#smali中函数结果的返回操作" class="headerlink" title="smali中函数结果的返回操作"></a>smali中函数结果的返回操作</h3></blockquote>
+<p>java中调用函数和返回函数结果可以用一条语句完成，但在smail中则需要分开完成，如果调用的函数返回非void，那么还需要用到move-result（返回基本数据类型）或者move-result-object（返回对象类型）。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span>-string v0,<span class="string">"aaa"</span></span><br><span class="line">invoke-<span class="keyword">static</span> &#123;v0&#125;,Lcmb/pbi;-&gt;t(Ljava/lang/String;)Ljava/lang/String;</span><br><span class="line">move-result-object v2</span><br></pre></td></tr></table></figure>
+<p>其中v2就是保存调用t方法后返回的String类型的字符串。</p>
+<blockquote>
+<h3 id="smali中的if语句"><a href="#smali中的if语句" class="headerlink" title="smali中的if语句"></a>smali中的if语句</h3></blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">.<span class="function">method <span class="keyword">private</span> <span class="title">ifRegistered</span><span class="params">()</span>Z</span></span><br><span class="line"><span class="function">  .locals 2    <span class="comment">//此函数中的本地寄存器的个数</span></span></span><br><span class="line"><span class="function">  .prologue</span></span><br><span class="line"><span class="function">  <span class="keyword">const</span>/4 v0,0x1   <span class="comment">//v0赋值为1</span></span></span><br><span class="line"><span class="function">  .local v0,tempFlag:Z</span></span><br><span class="line"><span class="function">  <span class="keyword">if</span>-eqz v0,:cond_0  <span class="comment">//判断v0是否等于0，等于0则跳到cond_0执行</span></span></span><br><span class="line"><span class="function">  <span class="keyword">const</span>/4 v1,0x1    <span class="comment">//符合条件分支</span></span></span><br><span class="line"><span class="function">  :goto_0    <span class="comment">//标签</span></span></span><br><span class="line"><span class="function">  retun v1   <span class="comment">//返回v1的值</span></span></span><br><span class="line"><span class="function">  :cond_0    <span class="comment">//标签</span></span></span><br><span class="line"><span class="function">  <span class="keyword">const</span>/4 v1,0x0    <span class="comment">//cond_0分支</span></span></span><br><span class="line"><span class="function">  goto:goto_0    <span class="comment">//跳到goto_0执行 即返回v1的值 改成return v1也可以</span></span></span><br><span class="line"><span class="function">.end method</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<h3 id="smali中的for语句"><a href="#smali中的for语句" class="headerlink" title="smali中的for语句"></a>smali中的for语句</h3></blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span>/<span class="number">4</span> v0,<span class="number">0x0</span>   <span class="comment">//v0=0</span></span><br><span class="line">.local v0,i:I</span><br><span class="line">:goto_0</span><br><span class="line"><span class="keyword">if</span>-It v0,v3,:cond_0  <span class="comment">//v0小于v3则跳转到cond_0并执行分支：cond_0</span></span><br><span class="line"><span class="keyword">return</span>-<span class="keyword">void</span></span><br><span class="line">  :cond_0  <span class="comment">//标签</span></span><br><span class="line">iget-object v1,p0,Lcom/a/MainActivity;-&gt;listStrings:Ljava/util/List; <span class="comment">//引用对象</span></span><br><span class="line"><span class="keyword">const</span>-string v2,<span class="string">"a"</span></span><br><span class="line">invoke-<span class="class"><span class="keyword">interface</span> </span>&#123;v1,v2&#125;,Ljava/util/List;-&gt;add(Ljava/lang/Object;)Z <span class="comment">//list是接口，执行接口方法add</span></span><br><span class="line">add-<span class="keyword">int</span>/lit8 v0,v0,<span class="number">0x1</span>  <span class="comment">//将第二个v0寄存器中的值，加上0x1的值放入第一个寄存器中</span></span><br><span class="line">goto:goto_0  <span class="comment">//回到goto_0标签</span></span><br></pre></td></tr></table></figure>
+]]></content>
+      
+        <categories>
+            
+            <category> smali </category>
+            
+        </categories>
+        
+        
+        <tags>
+            
+            <tag> smali </tag>
+            
+        </tags>
+        
+    </entry>
+    
+    <entry>
+      <title><![CDATA[C语言基本认识(二)]]></title>
+      <url>/2018/02/12/c/</url>
+      <content type="html"><![CDATA[<blockquote>
+<h1 id="C语言基本认识-二"><a href="#C语言基本认识-二" class="headerlink" title="C语言基本认识(二)"></a>C语言基本认识(二)</h1></blockquote>
+<hr>
+<p>​    <strong>现在距离过年还有4天，正好项目顺利发版，工作也清闲了些，想想已经一个多月没有写了，心中隐隐作痛，那我就继续出发了。</strong></p>
+<hr>
+<p>​                                                                     <em>书接上回。</em></p>
+<blockquote>
+<h3 id="volatile关键字"><a href="#volatile关键字" class="headerlink" title="volatile关键字"></a>volatile关键字</h3></blockquote>
+<p>​    volatile关键字和 const 一样是一种类型修饰符，用它修饰的变量表示可以被某些编译器未知的因素更改，比如操作系统、硬件或者其它线程等。遇到这个关键字声明的变量，编译器对访问该变量的代码就不再进行优化，从而可以提供对特殊地址的稳定访问。也就可以这样理解，被volatile修饰的变量，每次访问都要从内存当中读取，提高程序的稳定性。</p>
+<blockquote>
+<h3 id="struct关键字"><a href="#struct关键字" class="headerlink" title="struct关键字"></a>struct关键字</h3></blockquote>
+<p>​    在不考虑内存对齐的情况下，struct变量的所占的内存大小就是他所有自变量占用内存大小的和。柔性数组是定义在结构体中的一个可变大小的数组，他的前面必须要有一个成员变量，sizeof一个有柔性数组的结构体，他的大小并不包含这个柔性数组，包括柔性数组的结构体可以用malloc()函数来进行内存的动态分配。并且用free()函数来释放内存。结构体的成员变量都是public的而class都是private。</p>
+<blockquote>
+<h3 id="union关键字"><a href="#union关键字" class="headerlink" title="union关键字"></a>union关键字</h3></blockquote>
+<p>​    union的大小是其最大的成员变量的大小，常用union来压缩空间，使用条件是他的成员变量不可能同时使用。另外，这里我们在提一下大小端模式：</p>
+<p>大端模式（Big_endian）：字数据的高字节存储在低地址中，而字数据的低字节则存放在高地址中。 </p>
+<p>小端模式（Little_endian）：字数据的高字节存储在高地址中，而字数据的低字节则存放在低地址中。</p>
+<blockquote>
+<h3 id="enum关键字"><a href="#enum关键字" class="headerlink" title="enum关键字"></a>enum关键字</h3></blockquote>
+<p>​    enum的一般定义规则如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> enum_type_name</span><br><span class="line">&#123;</span><br><span class="line">ENUM_CONST_1,</span><br><span class="line">ENUM_CONST_2,</span><br><span class="line">...</span><br><span class="line">ENUM_CONST_n</span><br><span class="line">&#125; enum_variable_name;</span><br></pre></td></tr></table></figure>
+<p>​    在这里enum_type_name是数据类型名，而enum_variable_name是enum_type_name类型的变量名，也就是枚举变量。实际上enum_type_name类型是对一个变量取值范围的限定，而花括号内则是它的取值范围（都是常量，后面的比前面的+1）。如果如果给该类型变量所赋的值不在这个范围当中，就会报错。</p>
+<blockquote>
+<h4 id="枚举和-define宏的区别"><a href="#枚举和-define宏的区别" class="headerlink" title="枚举和#define宏的区别"></a>枚举和#define宏的区别</h4></blockquote>
+<p>1）#define 宏常量是在预编译阶段进行简单替换。枚举常量则是在编译的时候确定其值。<br>2）一般在编译器里，可以调试枚举常量，但是不能调试宏常量。<br>3）枚举可以一次定义大量相关的常量，而#define 宏一次只能定义一个。</p>
+<blockquote>
+<h3 id="typedef-关键字"><a href="#typedef-关键字" class="headerlink" title="typedef 关键字"></a>typedef 关键字</h3></blockquote>
+<p>​    typedef 的真正意思是给一个已经存在的数据类型（注意：是类型不是变量）取一个别名，而非定义一个新的数据类型。在实际项目中，为了方便，可能很多数据类型（尤其是结构体之类的自定义数据类型）需要我们重新取一个适用实际情况的别名。这时候 typedef 就可以帮助我们。例如：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">student</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//code</span></span><br><span class="line"></span><br><span class="line">&#125;Stu_st,*Stu_pst;</span><br></pre></td></tr></table></figure>
+<p>### </p>
+]]></content>
+      
+        <categories>
+            
+            <category> C语言 </category>
+            
+        </categories>
+        
+        
+        <tags>
+            
+            <tag> c语言 </tag>
+            
+        </tags>
+        
+    </entry>
+    
+    <entry>
+      <title><![CDATA[C语言的基本认识（一）]]></title>
+      <url>/2017/12/29/c/</url>
+      <content type="html"><![CDATA[<blockquote>
+<h1 id="C语言的基本认识（一）"><a href="#C语言的基本认识（一）" class="headerlink" title="C语言的基本认识（一）"></a>C语言的基本认识（一）</h1></blockquote>
+<hr>
+<p>​     <strong>为什么我要学习C语言，因为在以后的Android反编译和开发的学习中，对于SO文件的解析以及NDK的开发，都离不开C语言，C语言对比其他语言来说他更加趋于底层，适用大量计算，高效率的需求。对于任何编程语言的学习者来说都更加有帮助，好了废话说到这，来开始我们的C语言学习。</strong></p>
+<hr>
+<blockquote>
+<h3 id="1-定义与声明的区别："><a href="#1-定义与声明的区别：" class="headerlink" title="1.定义与声明的区别："></a>1.定义与声明的区别：</h3></blockquote>
+<p>定义声明最重要的区别：定义创建了对象并为对象分配了内存，声明没有分配内存（函数的参数）。</p>
+<blockquote>
+<h3 id="2-C中的关键字和数据类型："><a href="#2-C中的关键字和数据类型：" class="headerlink" title="2.C中的关键字和数据类型："></a>2.C中的关键字和数据类型：</h3></blockquote>
+<p>在C语言中一共有32个关键字以及6钟数据类型；再次声明sizeof是关键字而不是函数，各个类型所占的内存大小分别为short是2字节，int是4字节，long是4字节，char是1字节，double是8字节，float是4字节。以下是C语言中所有32个关键字：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">关键字                                                            意 义</span><br><span class="line"><span class="keyword">auto</span>                                              声明自动变量，缺省时编译器一般默认为 <span class="keyword">auto</span></span><br><span class="line"><span class="keyword">int</span>                                               声明整型变量</span><br><span class="line"><span class="keyword">double</span>                                            声明双精度变量</span><br><span class="line"><span class="keyword">long</span>                                              声明长整型变量</span><br><span class="line"><span class="keyword">char</span>                                              声明字符型变量</span><br><span class="line"><span class="keyword">float</span>                                             声明浮点型变量</span><br><span class="line"><span class="keyword">short</span>                                             声明短整型变量</span><br><span class="line"><span class="keyword">signed</span>                                            声明有符号类型变量</span><br><span class="line"><span class="keyword">unsigned</span>                                          声明无符号类型变量</span><br><span class="line"><span class="class"><span class="keyword">struct</span>                                            声明结构体变量</span></span><br><span class="line"><span class="class"><span class="title">union</span>                                             声明联合数据类型</span></span><br><span class="line"><span class="class"><span class="title">enum</span>                                              声明枚举类型</span></span><br><span class="line"><span class="class"><span class="title">static</span>                                            声明静态变量</span></span><br><span class="line"><span class="class"><span class="title">switch</span>                                            用于开关语句</span></span><br><span class="line"><span class="class"><span class="title">case</span>                                              开关语句分支</span></span><br><span class="line"><span class="class"><span class="title">default</span>                                           开关语句中的“其他”分支</span></span><br><span class="line"><span class="class"><span class="title">break</span>                                             跳出当前循环</span></span><br><span class="line"><span class="class"><span class="title">register</span>                                          声明寄存器变量</span></span><br><span class="line"><span class="class"><span class="title">const</span>                                             声明只读变量</span></span><br><span class="line"><span class="class"><span class="title">volatile</span>                                          说明变量在程序执行中可被隐含地改变</span></span><br><span class="line"><span class="class"><span class="title">typedef</span>                                           用以给数据类型取别名(当然还有其他作用)</span></span><br><span class="line"><span class="class"><span class="title">extern</span>                                            声明变量是在其他文件正声明(也可以看做是引用变量)</span></span><br><span class="line"><span class="class"><span class="title">return</span>                                            子程序返回语句(可以带参数，也可不带参数)</span></span><br><span class="line"><span class="class"><span class="title">void</span>                                              声明函数无返回值或无参数，声明空类型指针</span></span><br><span class="line"><span class="class"><span class="title">continue</span>                                          结束当前循环，开始下一轮循环</span></span><br><span class="line"><span class="class"><span class="title">do</span>                                                循环语句的循环体</span></span><br><span class="line"><span class="class"><span class="title">while</span>                                             循环语句的循环条件</span></span><br><span class="line"><span class="class"><span class="title">if</span>                                                条件语句</span></span><br><span class="line"><span class="class"><span class="title">else</span>                                              条件语句否定分支(与 <span class="title">if</span> 连用)</span></span><br><span class="line"><span class="class"><span class="title">for</span>                                               一种循环语句(可意会不可言传)</span></span><br><span class="line"><span class="class"><span class="title">goto</span>                                              无条件跳转语句</span></span><br><span class="line"><span class="class"><span class="title">sizeof</span>                                            计算对象所占内存空间大小</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<h3 id="3-C中空语句的写法："><a href="#3-C中空语句的写法：" class="headerlink" title="3.C中空语句的写法："></a>3.C中空语句的写法：</h3></blockquote>
+<p>在C中判断里的空语句使用<code>NULL;</code> ，而不是使用类似<code>if(NULL!=p);</code>这种方式。</p>
+<blockquote>
+<h3 id="4-if-、else语句的处理流程："><a href="#4-if-、else语句的处理流程：" class="headerlink" title="4.if 、else语句的处理流程："></a>4.if 、else语句的处理流程：</h3></blockquote>
+<p>在使用if语句时应该先处理正常的情况在处理异常情况。因为正常情况的发生概率往往更大，如果将异常情况先进行处理，会造成多次的无谓判断，似的性能变低，这种方式也适用于其他任何编程语言。</p>
+<blockquote>
+<h3 id="5-switch语句的处理流程和特点："><a href="#5-switch语句的处理流程和特点：" class="headerlink" title="5.switch语句的处理流程和特点："></a>5.switch语句的处理流程和特点：</h3></blockquote>
+<p>如果需要进行的判断较多，建议使用switch语句，case分支后只能是整型或者是字符型的常量和常量表达式，语句精炼，阅读性高，且必须使用defult分支，即使程序不需要defult处理。case分支的排列顺序应该按照字母顺序或者数字顺序来进行排序，与if、else语句一样的是，我们需要将正常情况放在前面，异常情况放在后面。</p>
+<!--if、else和switch语句的共同点：执行概率高的放在最前面判断。-->
+<blockquote>
+<h3 id="6-C语言中循环语句："><a href="#6-C语言中循环语句：" class="headerlink" title="6.C语言中循环语句："></a>6.C语言中循环语句：</h3></blockquote>
+<p>在C中的循环语句有 while、do-while、for，while（）语句先判断括号内的值，为真则执行大括号内的逻辑代码，否则不会执行，如果括号内是一个1，那就表示这是个死循环。</p>
+<blockquote>
+<h3 id="7-break和continue的区别："><a href="#7-break和continue的区别：" class="headerlink" title="7.break和continue的区别："></a>7.break和continue的区别：</h3><p>break关键字表示终止本层的循环，而continue代表终止本次循环。并且switch、case语句中并不能使用continue关键字，除非其外套有一层循环。在有嵌套的循环中应将长循环套在端循环的内部以提高性能。不能再循环体内修改循环变量，防止循环失控，一般来说循环体内的代码不应该超过20行，且循环嵌套应控制在3层以内。</p>
+<h3 id="8-VOID类型："><a href="#8-VOID类型：" class="headerlink" title="8.VOID类型："></a>8.VOID类型：</h3></blockquote>
+<p><code>void*</code>的意思是空指针，他可以指向任何类型的数据，如果指针p1和p2的类型相同，我们可以直接在p1和p2之间互相赋值，但是如果p1和p2指向不同的数据类型，那就必须将运算符右侧的指针类型转换为左边的指针类型，for example：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">float</span> *p1;</span><br><span class="line"><span class="keyword">int</span> *p2;</span><br><span class="line">p1=(<span class="keyword">float</span>*)p2;</span><br></pre></td></tr></table></figure>
+<p>而void类型则不同，任何类型的指针都可以直接赋值给他，无需强制类型转换，for example:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> *p1;</span><br><span class="line"><span class="keyword">int</span> *p2;</span><br><span class="line">p1=p2;</span><br></pre></td></tr></table></figure>
+<p>但是，任何指针类型并不能直接赋值给<code>void*</code>。另外，C语言中，如果函数没有写返回值，则默认为<code>int</code>。C语言中可以向无参函数传递任意类型的参数，但是在C++中的无参函数不接受任何参数。按照ANSI标准，不能对任何<code>void</code>指针进行算法操作，但是GUN则不同，他允许void指针进行算法操作。如果函数的参数可以是任意类型的指针那就可以声明其参数为<code>void*</code>。</p>
+<blockquote>
+<p>return关键字是用来终止一个函数并返回其后面跟着的值。</p>
+<h3 id="9-const关键字"><a href="#9-const关键字" class="headerlink" title="9.const关键字"></a>9.const关键字</h3></blockquote>
+<p>const是 constant 的缩写，是恒定不变的意思，也翻译为常量、常数等。很多人都认为被 const 修饰的值是常量。这是不精确的，精确的说应该是只读的变量，其值在编译时不能被使用，因为编译器在编译时不知道其存储的内容。这也就说明了为什么用const修饰的变量必须在定义的同时进行初始化操作，如果不对const修饰的变量进行初始化，那么这个变量在程序运行时也不会改变，使得const变得没有意义。（在C语言中使用const修饰的变量永远是变量）。编译器一般不会给const变量分配内存空间，他只是给出了对应的内存地址，在程序运行过程中他只有一个，即地址。const在修饰指针时，离谁近const就修饰谁（先忽略类型名），for example：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> *p; <span class="comment">//const 修饰*p,p 是指针，*p 是指针指向的对象，不可变 </span></span><br><span class="line"><span class="keyword">int</span> <span class="keyword">const</span> *p; <span class="comment">//const 修饰*p,p 是指针，*p 是指针指向的对象，不可变 </span></span><br><span class="line"><span class="keyword">int</span> *<span class="keyword">const</span> p; <span class="comment">//const 修饰 p,p 不可变， p 指向的对象可变 </span></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> *<span class="keyword">const</span> p; <span class="comment">//前一个 const 修饰*p,后一个 const 修饰p,指针p和p指向的对象 都不可变</span></span><br></pre></td></tr></table></figure>
+<p>const也可以修饰参数和函数返回值，情况：当一个函数的参数和一个函数的返回值在不希望被改变的情况下，可以用const修饰。在连接文件中引用const，举个例子：</p>
+<p><code>extern const int i;//正确的声明</code> </p>
+<p><code>extern const int j=10;//错误！只读变量的值不能改变。</code></p>
+<p><em>extern关键字只是声明，不是定义，不会开辟内存空间。</em></p>
+]]></content>
+      
+        <categories>
+            
+            <category> C语言 </category>
+            
+        </categories>
+        
+        
+        <tags>
+            
+            <tag> c语言 </tag>
+            
+        </tags>
+        
+    </entry>
+    
   
   
-    <script type="text/x-mathjax-config">
-      MathJax.Hub.Config({
-        tex2jax: {
-          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
-          processEscapes: true,
-          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
-        }
-      });
-    </script>
-
-    <script type="text/x-mathjax-config">
-      MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax(), i;
-        for (i=0; i < all.length; i += 1) {
-          all[i].SourceElement().parentNode.className += ' has-jax';
-        }
-      });
-    </script>
-    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-  
-
-
-  
-
-  
-
-</body>
-</html>
+</search>
